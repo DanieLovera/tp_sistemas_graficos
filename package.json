@@ -1,0 +1,30 @@
+{
+    "name": "tp_sistemas_graficos",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix ."
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.25.1",
+        "@types/three": "^0.176.0",
+        "@typescript-eslint/eslint-plugin": "^8.31.1",
+        "@typescript-eslint/parser": "^8.31.1",
+        "eslint": "^9.25.1",
+        "globals": "^16.0.0",
+        "prettier": "^3.5.3",
+        "typescript": "~5.7.2",
+        "typescript-eslint": "^8.31.1",
+        "vite": "^6.3.1"
+    },
+    "dependencies": {
+        "three": "^0.176.0"
+    }
+}
