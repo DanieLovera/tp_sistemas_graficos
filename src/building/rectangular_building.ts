@@ -4,7 +4,7 @@ import { zero, one } from "../functions";
 
 interface RectangularBuildingParams {
     width: number;
-    height: number;
+    depth: number;
     axialSegments: number;
     axialSegmentsHeight: number;
     scaleFn: (v: number) => number;
@@ -22,7 +22,7 @@ class RectangularBuilding {
     private static readonly DEFAULT_AXIAL_SEGMENTS_HEIGHT = 1;
     private static readonly DEFAULT_MATERIAL = new MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
     private width;
-    private height;
+    private depth;
     private axialSegments;
     private axialSegmentsHeight;
     private scaleFn;
@@ -32,7 +32,7 @@ class RectangularBuilding {
     constructor(optionalParams: OptionalRectangularBuildingParams) {
         const params = this.setParams(optionalParams);
         this.width = params.width;
-        this.height = params.height;
+        this.depth = params.depth;
         this.axialSegments = params.axialSegments;
         this.axialSegmentsHeight = params.axialSegmentsHeight;
         this.scaleFn = params.scaleFn;
@@ -49,7 +49,7 @@ class RectangularBuilding {
     private setParams(params: OptionalRectangularBuildingParams) {
         return {
             width: params.width ?? RectangularBuilding.DEFAULT_WIDTH,
-            height: params.height ?? RectangularBuilding.DEFAULT_HEIGHT,
+            depth: params.depth ?? RectangularBuilding.DEFAULT_HEIGHT,
             axialSegments: params.axialSegments ?? RectangularBuilding.DEFAULT_AXIAL_SEGMENTS,
             axialSegmentsHeight: params.axialSegmentsHeight ?? RectangularBuilding.DEFAULT_AXIAL_SEGMENTS_HEIGHT,
             scaleFn: params.scaleFn ?? one,
@@ -60,18 +60,18 @@ class RectangularBuilding {
 
     private rectangularProfile(u: number): [number, number] {
         const rectangleSides = 4;
-        const w = this.width;
-        const h = this.height;
+        const width = this.width;
+        const depth = this.depth;
         const corner = u * rectangleSides;
 
         if (corner < 1) {
-            return [-w / 2 + w * corner, -h / 2];
+            return [-width / 2 + width * corner, -depth / 2];
         } else if (corner < 2) {
-            return [w / 2, -h / 2 + h * (corner - 1)];
+            return [width / 2, -depth / 2 + depth * (corner - 1)];
         } else if (corner < 3) {
-            return [w / 2 - w * (corner - 2), h / 2];
+            return [width / 2 - width * (corner - 2), depth / 2];
         } else {
-            return [-w / 2, h / 2 - h * (corner - 3)];
+            return [-width / 2, depth / 2 - depth * (corner - 3)];
         }
     }
 
@@ -88,6 +88,10 @@ class RectangularBuilding {
 
     insert(scene: Scene) {
         scene.add(this.mesh);
+    }
+
+    translate(x: number, y: number, z: number) {
+        this.mesh.position.set(x, y, z);
     }
 }
 

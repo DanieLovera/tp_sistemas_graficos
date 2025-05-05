@@ -39,6 +39,10 @@ class CircularBuilding {
     insert(scene: Scene) {
         scene.add(this.mesh);
     }
+
+    translate(x: number, y: number, z: number) {
+        this.mesh.position.set(x, y, z);
+    }
 }
 
 export { CircularBuilding };
