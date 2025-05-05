@@ -1,6 +1,10 @@
 import { DirectionalLight, AmbientLight, Scene, AxesHelper } from "three";
 import { Ground } from "./ground";
 import { CircularBuilding } from "./building/circular_building";
+import { cuadratic, linear, twist } from "./functions";
+import { ElipticalBuilding } from "./building/elliptical_building";
+import { HexagonalBuilding } from "./building/hexagonal_building";
+import { RectangularBuilding } from "./building/rectangular_building";
 // import { Lot } from "./lot";
 
 class World {
@@ -20,17 +24,43 @@ class World {
         scene.add(axes);
 
         const circularBuilding = new CircularBuilding({
-            radius: 4,
+            radius: 2,
             axialSegments: 10,
-            axialSegmentsHeight: 2,
-            // torsionFn: twist(3),
-            // torsionFn: sinusoidal(3, 1),
-            // scaleFn: sinusoidal(0.1, 7, 0.2),
+            axialSegmentsHeight: 1,
+            scaleFn: linear(1, 0.5)
         });
+        circularBuilding.translate(10, 0, 0);
         circularBuilding.insert(scene);
 
-        // new Lot(circularBuilding.mesh);
+        const elipticalBuilding = new ElipticalBuilding({
+            a: 1,
+            b: 2,
+            axialSegments: 10,
+            axialSegmentsHeight: 1,
+        });
+        elipticalBuilding.translate(-10, 0, 0);
+        elipticalBuilding.insert(scene);
 
+        const hexagonalBuilding = new HexagonalBuilding({
+            radius: 2,
+            axialSegments: 10,
+            axialSegmentsHeight: 1,
+            scaleFn: cuadratic(2, 1)
+        });
+        hexagonalBuilding.translate(0, 0, 10);
+        hexagonalBuilding.insert(scene);
+
+        const rectangularBuilding = new RectangularBuilding({
+            width: 2,
+            depth: 2,
+            axialSegments: 10,
+            axialSegmentsHeight: 1,
+            torsionFn: twist(0.5)
+        });
+        rectangularBuilding.translate(0, 0, -10);
+        rectangularBuilding.insert(scene);
+
+        // new Lot(circularBuilding.mesh);
     }
 
     animate() {
