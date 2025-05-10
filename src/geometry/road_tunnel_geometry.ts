@@ -34,14 +34,13 @@ export class RoadTunnelGeometry {
 
     private createShapeForExtrusion(width: number, height: number, radius: number) {
         const shape = new Shape();
-        const full = radius + width;
-        shape.moveTo(-full, 0);
-        shape.lineTo(-radius, 0);
-        shape.absarc(0, 0, radius, Math.PI, 0, true);
-        shape.lineTo(full, 0);
-        shape.lineTo(full, height);
-        shape.lineTo(-full, height);
-        shape.lineTo(-full, 0);
+        shape.moveTo(-(radius + width), 0);
+        shape.lineTo(-(radius + width) + width, 0);
+        shape.absarc(0, 0, radius, Math.PI, 0, true); // inner arc, clockwise
+        shape.lineTo(radius + width, 0); // close the shape manually
+        shape.lineTo(radius + width, height); // close the shape manually
+        shape.lineTo(-(radius + width), height); // close the shape manually
+        shape.lineTo(-(radius + width), 0); // close the shape manually
         return shape;
     }
 
