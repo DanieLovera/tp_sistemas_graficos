@@ -12,18 +12,19 @@ class RoadGeometry {
     private static readonly DEFAULT_WIDTH = 4;
     private static readonly DEFAULT_HEIGHT = 0.2;
     private static readonly DEFAULT_SEGMENTS = 200;
+    private curve;
     public geometry;
 
     constructor(optionalParams: RoadGeometryParams) {
         const params = this.setParams(optionalParams);
         const shape = this.createShapeForExtrusion(params.width, params.height);
-        const curve = new CatmullRom({ controlPoints: params.controlPoints });
-        this.geometry = this.createExtrudeGeometry(shape, curve, {
+        this.curve = new CatmullRom({ controlPoints: params.controlPoints });
+        this.geometry = this.createExtrudeGeometry(shape, this.curve, {
             steps: params.segments,
         });
     }
 
-    setParams(params: RoadGeometryParams) {
+    private setParams(params: RoadGeometryParams) {
         return {
             controlPoints: params.controlPoints,
             width: params.width ?? RoadGeometry.DEFAULT_WIDTH,
@@ -45,6 +46,17 @@ class RoadGeometry {
 
     private createExtrudeGeometry(shape: Shape, curve: CatmullRom, extrudeSettings: ExtrudeSettings) {
         return curve.extrude(shape, extrudeSettings);
+    }
+
+    createSubroad(from: number, to: number, segments: number) {
+        const controlPoints = [];
+        for (let i = 0; i <= segments; ++i) {
+            const u = from + i * ((to - from) / segments);
+            const point = this.curve.getPointAt(u).toArray();
+            controlPoints.push(point);
+        }
+        const subcurve = new CatmullRom({ controlPoints: controlPoints, segments, closed: false });
+        return subcurve;
     }
 }
 
