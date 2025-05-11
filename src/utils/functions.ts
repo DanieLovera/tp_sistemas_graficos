@@ -6,7 +6,7 @@ function one(_u: number) {
     return 1;
 }
 
-function linear(m: number, b: number) {
+function linear(m: number, b = 0) {
     return (u: number) => {
         return m * (1 - u) + b;
     };
