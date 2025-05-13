@@ -1,6 +1,8 @@
-import { Vector3 } from "three";
+import { ShapeGeometry, Vector3 } from "three";
 import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 import { zero, one } from "../utils/functions";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { ParametricShape } from "../utils/parametric_shape";
 
 interface RectangularBuildingGeometryParams {
     width?: number;
@@ -12,9 +14,10 @@ interface RectangularBuildingGeometryParams {
 }
 
 class RectangularBuildingGeometry {
+    private static readonly PARAMETER_END = 1;
     private static readonly DEFAULT_WIDTH = 1;
     private static readonly DEFAULT_HEIGHT = 1;
-    private static readonly DEFAULT_RADIAL_SEGMENTS = 4;
+    private static readonly RADIAL_SEGMENTS = 4;
     private static readonly DEFAULT_AXIAL_SEGMENTS = 5;
     private static readonly DEFAULT_AXIAL_SEGMENTS_HEIGHT = 1;
     private width;
@@ -34,11 +37,16 @@ class RectangularBuildingGeometry {
         this.scaleFn = params.scaleFn;
         this.torsionFn = params.torsionFn;
 
-        this.geometry = new ParametricGeometry(
-            this.mappingFn,
-            RectangularBuildingGeometry.DEFAULT_RADIAL_SEGMENTS,
-            this.axialSegments,
+        const buldingGeometry = this.createBuldingGeometry(
+            RectangularBuildingGeometry.RADIAL_SEGMENTS,
+            params.axialSegments,
         );
+        const capGeometry = this.createCapGeometry(
+            RectangularBuildingGeometry.RADIAL_SEGMENTS,
+            params.axialSegments,
+            params.axialSegmentsHeight,
+        );
+        this.geometry = mergeGeometries([buldingGeometry, capGeometry]);
     }
 
     private setParams(params: RectangularBuildingGeometryParams) {
@@ -53,32 +61,52 @@ class RectangularBuildingGeometry {
         };
     }
 
-    private rectangularProfile(u: number): [number, number] {
+    private createBuldingGeometry(radialSegments: number, axialSegments: number) {
+        const mappingFn = (u: number, v: number, target: Vector3) => {
+            const [x, z] = this.rectangularProfile(u);
+            const scale = this.scaleFn(v);
+            const torsion = this.torsionFn(v);
+            const xt = scale * (x * Math.cos(torsion) - z * Math.sin(torsion));
+            const zt = scale * (x * Math.sin(torsion) + z * Math.cos(torsion));
+            const y = v * this.axialSegments * this.axialSegmentsHeight;
+
+            target.set(xt, y, zt);
+        };
+        const geometry = new ParametricGeometry(mappingFn, radialSegments, axialSegments);
+        return geometry;
+    }
+
+    private createCapGeometry(segments: number, axialSegments: number, axialSegmentsHeight: number) {
+        const profileShape = new ParametricShape({
+            mappingFn: this.rectangularProfile,
+            segments: segments,
+        });
+
+        const geometry = new ShapeGeometry(profileShape.shape);
+        const scale = this.scaleFn(RectangularBuildingGeometry.PARAMETER_END);
+        const torsion = this.torsionFn(RectangularBuildingGeometry.PARAMETER_END);
+        geometry.rotateX(Math.PI / 2);
+        geometry.rotateY(torsion);
+        geometry.scale(scale, scale, scale);
+        geometry.translate(0, axialSegments * axialSegmentsHeight, 0);
+        return geometry;
+    }
+
+    private rectangularProfile = (u: number): [number, number] => {
         const rectangleSides = 4;
         const width = this.width;
         const depth = this.depth;
-        const corner = u * rectangleSides;
+        const side = u * rectangleSides;
 
-        if (corner < 1) {
-            return [-width / 2 + width * corner, -depth / 2];
-        } else if (corner < 2) {
-            return [width / 2, -depth / 2 + depth * (corner - 1)];
-        } else if (corner < 3) {
-            return [width / 2 - width * (corner - 2), depth / 2];
+        if (side < 1) {
+            return [-width / 2 + width * side, -depth / 2];
+        } else if (side < 2) {
+            return [width / 2, -depth / 2 + depth * (side - 1)];
+        } else if (side < 3) {
+            return [width / 2 - width * (side - 2), depth / 2];
         } else {
-            return [-width / 2, depth / 2 - depth * (corner - 3)];
+            return [-width / 2, depth / 2 - depth * (side - 3)];
         }
-    }
-
-    private mappingFn = (u: number, v: number, target: Vector3) => {
-        const [x, z] = this.rectangularProfile(u);
-        const scale = this.scaleFn(v);
-        const torsion = this.torsionFn(v);
-        const xt = scale * (x * Math.cos(torsion) - z * Math.sin(torsion));
-        const zt = scale * (x * Math.sin(torsion) + z * Math.cos(torsion));
-        const y = v * this.axialSegments * this.axialSegmentsHeight;
-
-        target.set(xt, y, zt);
     };
 }
 

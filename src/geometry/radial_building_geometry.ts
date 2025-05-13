@@ -1,6 +1,8 @@
-import { Vector3 } from "three";
+import { ShapeGeometry, Vector3 } from "three";
 import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 import { zero, one } from "../utils/functions";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { ParametricShape } from "../utils/parametric_shape";
 
 interface RadialBuildingGeometryParams {
     a?: number;
@@ -13,6 +15,7 @@ interface RadialBuildingGeometryParams {
 }
 
 class RadialBuildingGeometry {
+    private static readonly PARAMETER_END = 1;
     private static readonly DEFAULT_A = 1;
     private static readonly DEFAULT_B = 1;
     private static readonly DEFAULT_RADIAL_SEGMENTS = 10;
@@ -34,7 +37,14 @@ class RadialBuildingGeometry {
         this.axialSegmentsHeight = params.axialSegmentsHeight;
         this.scaleFn = params.scaleFn;
         this.torsionFn = params.torsionFn;
-        this.geometry = new ParametricGeometry(this.mappingFn, params.radialSegments, this.axialSegments);
+
+        const buildingGeometry = this.createBuildingGeometry(params.radialSegments, params.axialSegments);
+        const capGeometry = this.createCapGeometry(
+            params.radialSegments,
+            params.axialSegments,
+            params.axialSegmentsHeight,
+        );
+        this.geometry = mergeGeometries([buildingGeometry, capGeometry]);
     }
 
     private setParams(params: RadialBuildingGeometryParams) {
@@ -49,22 +59,42 @@ class RadialBuildingGeometry {
         };
     }
 
-    private mappingFn = (u: number, v: number, target: Vector3) => {
-        const [x, z] = this.ellipticalProfile(u);
-        const scale = this.scaleFn(v);
-        const torsion = this.torsionFn(v);
-        const xt = scale * (x * Math.cos(torsion) - z * Math.sin(torsion));
-        const zt = scale * (x * Math.sin(torsion) + z * Math.cos(torsion));
-        const y = v * this.axialSegments * this.axialSegmentsHeight;
+    private createBuildingGeometry(radialSegments: number, axialSegments: number) {
+        const mappingFn = (u: number, v: number, target: Vector3) => {
+            const [x, z] = this.ellipticalProfile(u);
+            const scale = this.scaleFn(v);
+            const torsion = this.torsionFn(v);
+            const xt = scale * (x * Math.cos(torsion) - z * Math.sin(torsion));
+            const zt = scale * (x * Math.sin(torsion) + z * Math.cos(torsion));
+            const y = v * this.axialSegments * this.axialSegmentsHeight;
 
-        target.set(xt, y, zt);
-    };
+            target.set(xt, y, zt);
+        };
+        const geometry = new ParametricGeometry(mappingFn, radialSegments, axialSegments);
+        return geometry;
+    }
 
-    private ellipticalProfile(u: number) {
+    private createCapGeometry(radialSegments: number, axialSegments: number, axialSegmentsHeight: number) {
+        const profileShape = new ParametricShape({
+            mappingFn: this.ellipticalProfile,
+            segments: radialSegments,
+        });
+
+        const geometry = new ShapeGeometry(profileShape.shape);
+        const scale = this.scaleFn(RadialBuildingGeometry.PARAMETER_END);
+        const torsion = this.torsionFn(RadialBuildingGeometry.PARAMETER_END);
+        geometry.rotateX(Math.PI / 2);
+        geometry.rotateY(torsion);
+        geometry.scale(scale, scale, scale);
+        geometry.translate(0, axialSegments * axialSegmentsHeight, 0);
+        return geometry;
+    }
+
+    private ellipticalProfile = (u: number): [number, number] => {
         const x = this.a * Math.cos(2 * Math.PI * u);
         const y = this.b * Math.sin(2 * Math.PI * u);
         return [x, y];
-    }
+    };
 }
 
 export { RadialBuildingGeometry };
