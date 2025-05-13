@@ -36,14 +36,14 @@ export class RoadRampGeometry {
             const [x, y] = (() => {
                 const side = u * RoadRampGeometry.PROFILE_SIDES;
                 const scaleFn = linear(height);
-                height = this.reverse ? scaleFn(v) : scaleFn(1 - v);
+                const newHeight = this.reverse ? scaleFn(v) : scaleFn(1 - v);
 
                 if (side < 1) {
-                    return [-height * side, -width / 2];
+                    return [-newHeight * side, -width / 2];
                 } else if (side < 2) {
-                    return [-height, -width / 2 + width * (side - 1)];
+                    return [-newHeight, -width / 2 + width * (side - 1)];
                 } else if (side < 3) {
-                    return [-height + height * (side - 2), width / 2];
+                    return [-newHeight + newHeight * (side - 2), width / 2];
                 } else {
                     return [0, width / 2 - width * (side - 3)];
                 }
