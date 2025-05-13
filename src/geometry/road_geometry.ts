@@ -35,12 +35,11 @@ class RoadGeometry {
 
     private createShapeForExtrusion(width: number, height: number): Shape {
         const shape = new Shape();
-        const halfWidth = height / 2;
-        const halfHeight = width / 2;
-        shape.moveTo(-halfWidth, -halfHeight);
-        shape.lineTo(halfWidth, -halfHeight);
-        shape.lineTo(halfWidth, halfHeight);
-        shape.lineTo(-halfWidth, halfHeight);
+        shape.moveTo(-height, -width);
+        shape.lineTo(0, -width);
+        shape.lineTo(0, width);
+        shape.lineTo(-height, width);
+        shape.lineTo(-height, -width);
         return shape;
     }
 
