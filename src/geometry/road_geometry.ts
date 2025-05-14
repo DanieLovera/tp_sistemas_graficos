@@ -1,5 +1,5 @@
 import { Shape } from "three";
-import { CatmullRom, ExtrudeSettings } from "../utils/catmull_rom";
+import { CatmullRom, ExtrudeSettings, Orientation } from "../utils/catmull_rom";
 
 interface RoadGeometryParams {
     controlPoints: number[][];
@@ -12,15 +12,19 @@ class RoadGeometry {
     private static readonly DEFAULT_WIDTH = 4;
     private static readonly DEFAULT_HEIGHT = 0.2;
     private static readonly DEFAULT_SEGMENTS = 200;
+    private width;
+    private segments;
     private curve;
     public geometry;
 
     constructor(optionalParams: RoadGeometryParams) {
         const params = this.setParams(optionalParams);
         const shape = this.createShapeForExtrusion(params.width, params.height);
-        this.curve = new CatmullRom({ controlPoints: params.controlPoints });
+        this.width = params.width;
+        this.segments = params.segments;
+        this.curve = new CatmullRom({ controlPoints: params.controlPoints, segments: params.segments });
         this.geometry = this.createExtrudeGeometry(shape, this.curve, {
-            steps: params.segments,
+            bevelEnabled: false,
         });
     }
 
@@ -47,7 +51,9 @@ class RoadGeometry {
         return curve.extrude(shape, extrudeSettings);
     }
 
-    createSubroad(from: number, to: number, segments: number) {
+    createSubroad(from: number, to: number) {
+        const distance = to - from;
+        const segments = Math.ceil(distance * this.segments);
         const controlPoints = [];
         for (let i = 0; i <= segments; ++i) {
             const u = from + i * ((to - from) / segments);
@@ -56,6 +62,19 @@ class RoadGeometry {
         }
         const subcurve = new CatmullRom({ controlPoints: controlPoints, segments, closed: false });
         return subcurve;
+    }
+
+    getSweptMatrixFromInside(u: number, distance = 0) {
+        return this.getSweptMatrix(u, this.width + distance, Orientation.Inside);
+    }
+
+    getSweptMatrixFromOutside(u: number, distance = 0) {
+        return this.getSweptMatrix(u, this.width + distance, Orientation.Outside);
+    }
+
+    getSweptMatrix(u: number, distance = 0, orientation : Orientation) {
+        const matrix = this.curve.getSweptMatrix(u, distance, orientation);
+        return matrix;
     }
 }
 

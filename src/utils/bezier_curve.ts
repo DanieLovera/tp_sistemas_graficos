@@ -12,7 +12,7 @@ export class BezierCurve {
     private static readonly DEFAULT_SEGMENTS = 200;
     private segments;
     private closed;
-    public path;
+    private path;
 
     constructor(optionalParams: CurveParams) {
         const params = this.setParams(optionalParams);
