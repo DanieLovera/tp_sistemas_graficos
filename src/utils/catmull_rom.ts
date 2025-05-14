@@ -7,23 +7,30 @@ interface CurveParams {
     closed?: boolean;
 }
 
-type ExtrudeSettings = Omit<ExtrudeGeometryOptions, "steps | depth" | "extrudePath">;
+type ExtrudeSettings = Omit<ExtrudeGeometryOptions, "steps" | "depth" | "extrudePath">;
 
 class CatmullRom {
     private static readonly DEFAULT_CLOSED = true;
     private static readonly DEFAULT_SEGMENTS = 200;
     private segments;
     private closed;
-    public curve;
+    private tangents;
+    private binormals;
+    private normals;
+    private curve;
 
     constructor(optionalParams: CurveParams) {
         const params = this.setParams(optionalParams);
         this.segments = params.segments;
         this.closed = params.closed;
         this.curve = this.createPath(params);
+        const frenetFrames = this.curve.computeFrenetFrames(this.segments, this.closed);
+        this.tangents = frenetFrames.tangents;
+        this.binormals = frenetFrames.binormals;
+        this.normals = frenetFrames.normals;
     }
 
-    setParams(params: CurveParams) {
+    private setParams(params: CurveParams) {
         return {
             controlPoints: params.controlPoints,
             segments: params.segments ?? CatmullRom.DEFAULT_SEGMENTS,
@@ -31,9 +38,9 @@ class CatmullRom {
         };
     }
 
-    createPath(params: CurveParams) {
+    private createPath(params: CurveParams) {
         const controlPoints = params.controlPoints.map((point) => new Vector3(...point));
-        const curve = new CatmullRomCurve3(controlPoints, params.closed, "catmullrom");
+        const curve = new CatmullRomCurve3(controlPoints, params.closed, "chordal");
         return curve;
     }
 
@@ -47,12 +54,11 @@ class CatmullRom {
     }
 
     parametricSwept(mappingFn: (u: number, v: number) => [number, number, number], slices: number) {
-        const { tangents, normals, binormals } = this.curve.computeFrenetFrames(this.segments, this.closed);
         const sweptFn = (u: number, v: number, target: Vector3) => {
             const index = Math.floor(v * this.segments);
-            const tangent = tangents[index];
-            const normal = normals[index];
-            const binormal = binormals[index];
+            const tangent = this.tangents[index];
+            const normal = this.normals[index];
+            const binormal = this.binormals[index];
             const curvePoint = this.curve.getPointAt(v);
             const sweptMatrix = new Matrix4()
             sweptMatrix.makeBasis(normal, binormal, tangent);
@@ -66,6 +72,20 @@ class CatmullRom {
 
         const geometry = new ParametricGeometry(sweptFn, slices, this.segments);
         return geometry;
+    }
+
+    getSweptMatrix(u: number, distance = 0) {
+        const index = Math.floor(u * this.segments);
+        const binormal = this.binormals[index];
+        const normal = this.normals[index];
+        const tangent = this.tangents[index];
+
+        const matrix = new Matrix4();
+        matrix.makeBasis(normal, binormal, tangent);
+        const curvePoint = this.curve.getPointAt(u);
+        const position = curvePoint.add(binormal.multiplyScalar(distance));
+        matrix.setPosition(position);
+        return matrix;
     }
 
     getPointAt(u: number) {
