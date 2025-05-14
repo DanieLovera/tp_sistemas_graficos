@@ -1,5 +1,5 @@
 # TP Escena Urbana
 
 > npm install  
-> npx vite  
+> npm run dev
 > http://localhost:5173/
