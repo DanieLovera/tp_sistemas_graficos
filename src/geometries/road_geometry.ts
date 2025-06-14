@@ -65,14 +65,14 @@ class RoadGeometry {
     }
 
     getSweptMatrixFromInside(u: number, distance = 0) {
-        return this.getSweptMatrix(u, this.width + distance, Orientation.Inside);
+        return this.getSweptMatrix(u, Orientation.Inside, this.width + distance);
     }
 
     getSweptMatrixFromOutside(u: number, distance = 0) {
-        return this.getSweptMatrix(u, this.width + distance, Orientation.Outside);
+        return this.getSweptMatrix(u, Orientation.Outside, this.width + distance);
     }
 
-    getSweptMatrix(u: number, distance = 0, orientation : Orientation) {
+    getSweptMatrix(u: number, orientation : Orientation, distance = 0) {
         const matrix = this.curve.getSweptMatrix(u, distance, orientation);
         return matrix;
     }

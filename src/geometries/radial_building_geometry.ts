@@ -67,7 +67,6 @@ class RadialBuildingGeometry {
             const xt = scale * (x * Math.cos(torsion) - z * Math.sin(torsion));
             const zt = scale * (x * Math.sin(torsion) + z * Math.cos(torsion));
             const y = v * this.axialSegments * this.axialSegmentsHeight;
-
             target.set(xt, y, zt);
         };
         const geometry = new ParametricGeometry(mappingFn, radialSegments, axialSegments);
@@ -83,16 +82,16 @@ class RadialBuildingGeometry {
         const geometry = new ShapeGeometry(profileShape.shape);
         const scale = this.scaleFn(RadialBuildingGeometry.PARAMETER_END);
         const torsion = this.torsionFn(RadialBuildingGeometry.PARAMETER_END);
-        geometry.rotateX(Math.PI / 2);
-        geometry.rotateY(torsion);
+        geometry.rotateX(-Math.PI / 2);
+        geometry.rotateY(-torsion);
         geometry.scale(scale, scale, scale);
         geometry.translate(0, axialSegments * axialSegmentsHeight, 0);
         return geometry;
     }
 
     private ellipticalProfile = (u: number): [number, number] => {
-        const x = this.a * Math.cos(2 * Math.PI * u);
-        const y = this.b * Math.sin(2 * Math.PI * u);
+        const x = this.a * Math.cos(-2 * Math.PI * u);
+        const y = this.b * Math.sin(-2 * Math.PI * u);
         return [x, y];
     };
 }

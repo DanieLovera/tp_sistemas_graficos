@@ -9,7 +9,7 @@ interface CurveParams {
 
 enum Orientation {
     Outside = -1,
-    Inside = 1
+    Inside = 1,
 }
 
 type ExtrudeSettings = Omit<ExtrudeGeometryOptions, "steps" | "depth" | "extrudePath">;
@@ -65,7 +65,7 @@ class CatmullRom {
             const normal = this.normals[index];
             const binormal = this.binormals[index];
             const curvePoint = this.curve.getPointAt(v);
-            const sweptMatrix = new Matrix4()
+            const sweptMatrix = new Matrix4();
             sweptMatrix.makeBasis(normal, binormal, tangent);
             sweptMatrix.setPosition(curvePoint);
 
@@ -79,7 +79,7 @@ class CatmullRom {
         return geometry;
     }
 
-    getSweptMatrix(u: number, distance = 0, orientation : Orientation) {
+    getSweptMatrix(u: number, distance = 0, orientation: Orientation) {
         const index = Math.floor(u * this.segments);
         const binormal = this.binormals[index];
         const normal = this.normals[index];
@@ -88,8 +88,12 @@ class CatmullRom {
         const matrix = new Matrix4();
         matrix.makeBasis(normal, binormal, tangent);
         const curvePoint = this.curve.getPointAt(u);
-        const position = curvePoint.add(binormal.multiplyScalar(orientation * Math.abs(distance)));
+        const position = curvePoint.add(binormal.clone().multiplyScalar(orientation * Math.abs(distance)));
         matrix.setPosition(position);
+
+        const matrixRz = new Matrix4();
+        matrixRz.makeRotationZ(Math.PI / 2);
+        matrix.multiply(matrixRz);
         return matrix;
     }
 
@@ -98,5 +102,5 @@ class CatmullRom {
     }
 }
 
-export { CatmullRom , Orientation};
+export { CatmullRom, Orientation };
 export type { ExtrudeSettings };

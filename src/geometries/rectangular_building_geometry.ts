@@ -85,8 +85,8 @@ class RectangularBuildingGeometry {
         const geometry = new ShapeGeometry(profileShape.shape);
         const scale = this.scaleFn(RectangularBuildingGeometry.PARAMETER_END);
         const torsion = this.torsionFn(RectangularBuildingGeometry.PARAMETER_END);
-        geometry.rotateX(Math.PI / 2);
-        geometry.rotateY(torsion);
+        geometry.rotateX(-Math.PI / 2);
+        geometry.rotateY(-torsion);
         geometry.scale(scale, scale, scale);
         geometry.translate(0, axialSegments * axialSegmentsHeight, 0);
         return geometry;
@@ -99,13 +99,13 @@ class RectangularBuildingGeometry {
         const side = u * rectangleSides;
 
         if (side < 1) {
-            return [-width / 2 + width * side, -depth / 2];
+            return [-width / 2 + width * side, depth / 2];
         } else if (side < 2) {
-            return [width / 2, -depth / 2 + depth * (side - 1)];
+            return [width / 2, depth / 2 - depth * (side - 1)];
         } else if (side < 3) {
-            return [width / 2 - width * (side - 2), depth / 2];
+            return [width / 2 - width * (side - 2), -depth / 2];
         } else {
-            return [-width / 2, depth / 2 - depth * (side - 3)];
+            return [-width / 2, -depth / 2 + depth * (side - 3)];
         }
     };
 }
