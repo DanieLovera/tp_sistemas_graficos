@@ -1,7 +1,7 @@
-import { ShapeGeometry, Vector3 } from "three";
+import { Float32BufferAttribute, ShapeGeometry, Vector3 } from "three";
 import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 import { zero, one } from "../utils/functions";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+// import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { ParametricShape } from "../utils/parametric_shape";
 
 interface RectangularBuildingGeometryParams {
@@ -26,7 +26,8 @@ class RectangularBuildingGeometry {
     private axialSegmentsHeight;
     private scaleFn;
     private torsionFn;
-    public geometry;
+    public bodyGeometry;
+    public capGeometry;
 
     constructor(optionalParams: RectangularBuildingGeometryParams) {
         const params = this.setParams(optionalParams);
@@ -37,16 +38,14 @@ class RectangularBuildingGeometry {
         this.scaleFn = params.scaleFn;
         this.torsionFn = params.torsionFn;
 
-        const buldingGeometry = this.createBuldingGeometry(
-            RectangularBuildingGeometry.RADIAL_SEGMENTS,
-            params.axialSegments,
-        );
+        const bodyGeometry = this.createBodyGeometry(RectangularBuildingGeometry.RADIAL_SEGMENTS, params.axialSegments);
         const capGeometry = this.createCapGeometry(
             RectangularBuildingGeometry.RADIAL_SEGMENTS,
             params.axialSegments,
             params.axialSegmentsHeight,
         );
-        this.geometry = mergeGeometries([buldingGeometry, capGeometry]);
+        this.bodyGeometry = bodyGeometry;
+        this.capGeometry = capGeometry;
     }
 
     private setParams(params: RectangularBuildingGeometryParams) {
@@ -61,7 +60,7 @@ class RectangularBuildingGeometry {
         };
     }
 
-    private createBuldingGeometry(radialSegments: number, axialSegments: number) {
+    private createBodyGeometry(radialSegments: number, axialSegments: number) {
         const mappingFn = (u: number, v: number, target: Vector3) => {
             const [x, z] = this.rectangularProfile(u);
             const scale = this.scaleFn(v);
@@ -89,7 +88,30 @@ class RectangularBuildingGeometry {
         geometry.rotateY(-torsion);
         geometry.scale(scale, scale, scale);
         geometry.translate(0, axialSegments * axialSegmentsHeight, 0);
+        this.setUVsCoordinates(geometry);
+
         return geometry;
+    }
+
+    private setUVsCoordinates(geometry: ShapeGeometry) {
+        geometry.computeBoundingBox();
+        const boundingBox = geometry.boundingBox;
+        if (boundingBox) {
+            const max = boundingBox.max;
+            const min = boundingBox.min;
+            const offset = [0 - min.x, 0 - min.z];
+            const range = [max.x - min.x, max.z - min.z];
+
+            const positions = geometry.attributes.position.array;
+            const uvs: number[] = [];
+
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = positions[i];
+                const z = positions[i + 2];
+                uvs.push((x + offset[0]) / range[0], 1 - (z + offset[1]) / range[1]);
+            }
+            geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+        }
     }
 
     private rectangularProfile = (u: number): [number, number] => {

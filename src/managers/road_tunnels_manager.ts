@@ -1,8 +1,9 @@
 import * as config from "../config/road_structure.json";
-import { MeshBasicMaterial, Mesh } from "three";
+import { Mesh, TextureLoader, RepeatWrapping, MeshStandardMaterial, Vector2 } from "three";
 import { RoadGeometry } from "../geometries/road_geometry";
 import { RoadTunnelGeometry } from "../geometries/road_tunnel_geometry";
 import { ThreeManager } from "./three_manager";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 export class RoadTunnelsManager {
     private meshes;
@@ -24,7 +25,7 @@ export class RoadTunnelsManager {
                 curve: subroad,
                 width: tunnel.width,
                 height: tunnel.height,
-                radius: config.road.width,
+                radius: tunnel.radius,
             });
             geometries.push(geometry);
         }
@@ -32,13 +33,38 @@ export class RoadTunnelsManager {
     }
 
     createMeshes(geometries: RoadTunnelGeometry[]) {
-        const meshes = [];
+        const loader = new TextureLoader();
+        const colorMap = loader.load("textures/Concrete008_4K-JPG_Color.jpg");
+        const aoMap = loader.load("textures/Concrete008_4K-JPG_AmbientOcclusion.jpg");
+        const normalMap = loader.load("textures/Concrete008_4K-JPG_NormalGL.jpg");
+        const roughnessMap = loader.load("textures/Concrete008_4K-JPG_Roughness.jpg");
+
+        const maps = [colorMap, normalMap, aoMap, roughnessMap];
+        maps.forEach((tex) => {
+            if (tex) {
+                tex.wrapS = RepeatWrapping;
+                tex.wrapT = RepeatWrapping;
+                tex.repeat.set(0.1, 0.1);
+            }
+        });
+
+        const groundMaterial = new MeshStandardMaterial({
+            map: colorMap,
+            aoMap: aoMap,
+            normalMap: normalMap,
+            roughnessMap: roughnessMap,
+            roughness: 1,
+            normalScale: new Vector2(1, 1),
+            color: 0x6c6f72,
+        });
+
+        const rawGeometries = [];
         for (const geometry of geometries) {
-            const material = new MeshBasicMaterial({ color: 0xffff, wireframe: true });
-            const mesh = new Mesh(geometry.geometry, material);
-            meshes.push(mesh);
+            rawGeometries.push(geometry.geometry);
         }
-        return meshes;
+        const mergedGeometries = mergeGeometries(rawGeometries);
+        const mesh = new Mesh(mergedGeometries, groundMaterial);
+        return [mesh];
     }
 
     render() {

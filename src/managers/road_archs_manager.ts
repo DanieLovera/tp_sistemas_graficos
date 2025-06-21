@@ -1,8 +1,9 @@
 import * as config from "../config/road_structure.json";
-import { MeshBasicMaterial, Mesh } from "three";
+import { Mesh, MeshStandardMaterial } from "three";
 import { RoadGeometry } from "../geometries/road_geometry";
 import { RoadArchGeometry } from "../geometries/road_arch_geometry";
 import { ThreeManager } from "./three_manager";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 export class RoadArchsManager {
     private meshes;
@@ -18,8 +19,8 @@ export class RoadArchsManager {
     private createGeometries(roadGeometry: RoadGeometry) {
         const archs = config.archs;
         const geometries = [];
-        for (const ramp of archs) {
-            const subroad = roadGeometry.createSubroad(ramp.from, ramp.to);
+        for (const arch of archs) {
+            const subroad = roadGeometry.createSubroad(arch.from, arch.to);
             const geometry = new RoadArchGeometry({
                 curve: subroad,
                 radius: config.road.width,
@@ -30,14 +31,15 @@ export class RoadArchsManager {
     }
 
     createMeshes(geometries: RoadArchGeometry[]) {
-        const meshes = [];
+        const rawGeometries = [];
         for (const geometry of geometries) {
-            const material = new MeshBasicMaterial({ color: 0xffff, wireframe: true });
-            const mesh = new Mesh(geometry.geometry, material);
-            meshes.push(mesh);
+            rawGeometries.push(geometry.geometry);
         }
 
-        return meshes;
+        const rawGeometry = mergeGeometries(rawGeometries);
+        const material = new MeshStandardMaterial({ color: 0xffff });
+        const mesh = new Mesh(rawGeometry, material);
+        return [mesh];
     }
 
     render() {

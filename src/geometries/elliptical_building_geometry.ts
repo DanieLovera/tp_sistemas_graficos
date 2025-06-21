@@ -6,8 +6,9 @@ type EllipticalBuildingGeometryParams = Omit<RadialBuildingGeometryParams, "radi
 class EllipticalBuildingGeometry {
     private static readonly DEFAULT_A = 1;
     private static readonly DEFAULT_B = 2;
-    private static readonly RADIAL_SEGMENTS = 50;
-    public geometry;
+    private static readonly RADIAL_SEGMENTS = 1000;
+    public bodyGeometry;
+    public capGeometry;
 
     constructor(optionalParams: EllipticalBuildingGeometryParams) {
         const params = this.setParams(optionalParams);
@@ -20,7 +21,8 @@ class EllipticalBuildingGeometry {
             scaleFn: params.scaleFn,
             torsionFn: params.torsionFn,
         });
-        this.geometry = building.geometry;
+        this.bodyGeometry = building.bodyGeometry;
+        this.capGeometry = building.capGeometry;
     }
 
     private setParams(params: EllipticalBuildingGeometryParams) {

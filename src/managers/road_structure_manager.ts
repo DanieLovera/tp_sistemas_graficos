@@ -1,6 +1,6 @@
 import * as config from "../config/road_structure.json";
 import BigNumber from "bignumber.js";
-import { MeshBasicMaterial, Mesh, Vector3 } from "three";
+import { Mesh, Vector3, RepeatWrapping, TextureLoader, MeshStandardMaterial } from "three";
 import { RoadGeometry } from "../geometries/road_geometry";
 import { RoadTunnelsManager } from "./road_tunnels_manager";
 import { RoadRampsManager } from "./road_ramps_manager";
@@ -11,13 +11,12 @@ import { GroundManager } from "./ground_manager";
 import { Orientation } from "../utils/catmull_rom";
 
 export class RoadStructureManager {
-    scene;
-
-    tunnelsManager;
-    rampsManager;
-    archsManager;
-    streetlightsManager;
-    geometry;
+    private scene;
+    private tunnelsManager;
+    private rampsManager;
+    private archsManager;
+    private streetlightsManager;
+    private geometry;
 
     constructor(ground: GroundManager) {
         const threeManager = ThreeManager.getInstance();
@@ -41,11 +40,16 @@ export class RoadStructureManager {
         const from = new BigNumber(0);
         const to = new BigNumber(1);
         const steps = new BigNumber(1 / 1000);
+
         for (let u = from; u.isLessThanOrEqualTo(to); u = u.plus(steps)) {
             {
                 // Mark ground lots along the inner edge of the road with specified width
                 const vector = new Vector3();
-                const sweptMatrix = roadGeometry.getSweptMatrix(u.toNumber(), Orientation.Inside, config.road.width);
+                const sweptMatrix = roadGeometry.getSweptMatrix(
+                    u.toNumber(),
+                    Orientation.Inside,
+                    config.road.width + 3,
+                );
                 vector.applyMatrix4(sweptMatrix);
                 ground.markLot(vector.x, vector.z);
             }
@@ -61,7 +65,11 @@ export class RoadStructureManager {
             {
                 // Mark ground lots along the outer edge of the road with specified width
                 const vector = new Vector3();
-                const sweptMatrix = roadGeometry.getSweptMatrix(u.toNumber(), Orientation.Outside, config.road.width);
+                const sweptMatrix = roadGeometry.getSweptMatrix(
+                    u.toNumber(),
+                    Orientation.Outside,
+                    config.road.width + 3,
+                );
                 vector.applyMatrix4(sweptMatrix);
                 ground.markLot(vector.x, vector.z);
             }
@@ -69,9 +77,30 @@ export class RoadStructureManager {
         return roadGeometry;
     }
 
+    setDaylightTheme() {
+        this.streetlightsManager.setDaylightTheme();
+    }
+
+    setNightlightTheme() {
+        this.streetlightsManager.setNightlightTheme();
+    }
+
     render() {
-        const extrudeMaterial = new MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
+        const extrudeMaterial = new MeshStandardMaterial({ color: 0x222222 });
+
+        // const loader = new TextureLoader();
+        // const texture = loader.load('textures/pavment.png');
+
+        // texture.wrapS = RepeatWrapping;
+        // texture.wrapT = RepeatWrapping;
+        // texture.repeat.set(2, 2);  // Repite 20 veces la textura para no estirarla
+
+        // const groundMaterial = new MeshBasicMaterial({ map: texture });
+
         const extrudeMesh = new Mesh(this.geometry.geometry, extrudeMaterial);
+
+        // this.scene.add(extrudeMesh);
+
         this.scene.add(extrudeMesh);
 
         this.tunnelsManager.render();

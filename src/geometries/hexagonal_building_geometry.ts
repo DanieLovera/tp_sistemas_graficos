@@ -8,7 +8,8 @@ interface HexagonalBuildingParams extends Omit<RadialBuildingGeometryParams, "a"
 class HexagonalBuildingGeometry {
     private static readonly DEFAULT_RADIUS = 1;
     private static readonly RADIAL_SEGMENTS = 6;
-    public geometry;
+    public bodyGeometry;
+    public capGeometry;
 
     constructor(optionalParams: HexagonalBuildingParams) {
         const params = this.setParams(optionalParams);
@@ -21,7 +22,8 @@ class HexagonalBuildingGeometry {
             scaleFn: params.scaleFn,
             torsionFn: params.torsionFn,
         });
-        this.geometry = building.geometry;
+        this.bodyGeometry = building.bodyGeometry;
+        this.capGeometry = building.capGeometry;
     }
 
     private setParams(params: HexagonalBuildingParams) {

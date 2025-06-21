@@ -7,8 +7,9 @@ interface CircularBuildingGeometryParams extends Omit<RadialBuildingGeometryPara
 
 class CircularBuildingGeometry {
     private static readonly DEFAULT_RADIUS = 1;
-    private static readonly RADIAL_SEGMENTS = 50;
-    public geometry;
+    private static readonly RADIAL_SEGMENTS = 1000;
+    public bodyGeometry;
+    public capGeometry;
 
     constructor(optionalParams: CircularBuildingGeometryParams) {
         const params = this.setParams(optionalParams);
@@ -21,7 +22,8 @@ class CircularBuildingGeometry {
             scaleFn: params.scaleFn,
             torsionFn: params.torsionFn,
         });
-        this.geometry = building.geometry;
+        this.bodyGeometry = building.bodyGeometry;
+        this.capGeometry = building.capGeometry;
     }
 
     private setParams(params: CircularBuildingGeometryParams) {

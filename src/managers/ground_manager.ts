@@ -1,4 +1,4 @@
-import { GridHelper } from "three";
+import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, TextureLoader } from "three";
 import { Lot } from "../utils/lot";
 import { ThreeManager } from "./three_manager";
 
@@ -6,8 +6,10 @@ class GroundManager {
     private scene;
     private gridSize;
     private gridDivisions;
-    private grid;
+    // private grid;
     private lots;
+
+    private groundGeometry;
 
     constructor(gridSize: number, gridDivisions: number) {
         if (gridSize % gridDivisions != 0) {
@@ -18,8 +20,10 @@ class GroundManager {
         this.scene = threeManager.scene;
         this.gridSize = gridSize;
         this.gridDivisions = gridDivisions;
+
         this.lots = this.createLots(gridSize, gridDivisions);
-        this.grid = new GridHelper(gridSize, gridDivisions);
+        this.groundGeometry = new PlaneGeometry(gridSize, gridSize);
+        // this.grid = new GridHelper(gridSize, gridDivisions, 0x0000000);
     }
 
     private createLots(gridSize: number, gridDivisions: number) {
@@ -76,11 +80,43 @@ class GroundManager {
     }
 
     getEmptyLots() {
-        return this.lots.flat().filter(lot => lot.isEmpty());
+        return this.lots.flat().filter((lot) => lot.isEmpty());
+    }
+
+    createMesh() {
+        const loader = new TextureLoader();
+        const colorMap = loader.load("textures/PavingStones126A_4K-JPG_Color.jpg");
+        const aoMap = loader.load("textures/PavingStones126A_4K-JPG_AmbientOcclusion.jpg");
+        const normalMap = loader.load("textures/PavingStones126A_4K-JPG_NormalGL.jpg");
+        const roughnessMap = loader.load("textures/PavingStones126A_4K-JPG_Roughness.jpg");
+
+        const maps = [colorMap, normalMap, aoMap, roughnessMap];
+        maps.forEach((tex) => {
+            if (tex) {
+                tex.wrapS = RepeatWrapping;
+                tex.wrapT = RepeatWrapping;
+                tex.repeat.set(2, 1);
+            }
+        });
+
+        const groundMaterial = new MeshStandardMaterial({
+            map: colorMap,
+            aoMap: aoMap,
+            normalMap: normalMap,
+            roughnessMap: roughnessMap,
+            roughness: 1,
+            color: 0xffffff,
+        });
+
+        const groundMesh = new Mesh(this.groundGeometry, groundMaterial);
+        groundMesh.rotation.x = -Math.PI / 2;
+        return groundMesh;
     }
 
     render() {
-        this.scene.add(this.grid);
+        const groundMesh = this.createMesh();
+        this.scene.add(groundMesh);
+        // this.scene.add(this.grid);
     }
 }
 

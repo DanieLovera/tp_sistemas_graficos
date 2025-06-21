@@ -1,19 +1,22 @@
 import * as config from "../config/road_structure.json";
-import { MeshBasicMaterial, Mesh, Matrix4 } from "three";
+import { MeshStandardMaterial, Mesh, Matrix4, PointLight, Vector3 } from "three";
 import { RoadGeometry } from "../geometries/road_geometry";
 import { RoadStreetlightGeometry } from "../geometries/road_streetlight_geometry";
 import { ThreeManager } from "./three_manager";
 import BigNumber from "bignumber.js";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 export class RoadStreetlightsManager {
-    private meshes;
     private scene;
+    private meshes;
+    private pointLights!: PointLight[];
 
     constructor(roadGeometry: RoadGeometry) {
         const threeManager = ThreeManager.getInstance();
-        const geometries = this.createGeometries(roadGeometry);
-        this.meshes = this.createMeshes(geometries);
         this.scene = threeManager.scene;
+        const geometries = this.createGeometries(roadGeometry);
+        this.setPointLights(geometries);
+        this.meshes = this.createMeshes(geometries);
     }
 
     private createGeometries(roadGeometry: RoadGeometry) {
@@ -63,19 +66,50 @@ export class RoadStreetlightsManager {
         return geometries;
     }
 
-    createMeshes(geometries: RoadStreetlightGeometry[]) {
+    private createMeshes(geometries: RoadStreetlightGeometry[]) {
+        const postMaterial = new MeshStandardMaterial({ color: 0x222222 });
+        const lampMaterial = new MeshStandardMaterial({
+            color: 0xffff00,
+            emissive: 0xffff00,
+            emissiveIntensity: 1,
+        });
+
         const meshes = [];
-
-        const lampMaterial = new MeshBasicMaterial({ color: 0xffff00, wireframe: true });
-        const postMaterial = new MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
+        const postGeometries = [];
+        const postLampGeometries = [];
         for (const { geometry } of geometries) {
-            const lampMesh = new Mesh(geometry.postLampGeometry, lampMaterial);
-            const postMesh = new Mesh(geometry.postGeometry, postMaterial);
-            postMesh.add(lampMesh);
-
-            meshes.push(postMesh);
+            postGeometries.push(geometry.postGeometry);
+            postLampGeometries.push(geometry.postLampGeometry);
         }
+
+        const postMesh = new Mesh(mergeGeometries(postGeometries), postMaterial);
+        const lampMesh = new Mesh(mergeGeometries(postLampGeometries), lampMaterial);
+        meshes.push(postMesh, lampMesh);
         return meshes;
+    }
+
+    private setPointLights(geometries: RoadStreetlightGeometry[]) {
+        const pointLights = [];
+        for (const { geometry } of geometries) {
+            geometry.postLampGeometry.computeBoundingBox();
+            const center = new Vector3();
+            if (geometry.postLampGeometry.boundingBox) {
+                geometry.postLampGeometry.boundingBox.getCenter(center);
+            }
+
+            const light = new PointLight(0xffffaa, 5, 20, 2);
+            light.position.copy(center);
+            pointLights.push(light);
+        }
+        this.pointLights = pointLights;
+    }
+
+    setDaylightTheme() {
+        this.scene.remove(...this.pointLights);
+    }
+
+    setNightlightTheme() {
+        this.scene.add(...this.pointLights);
     }
 
     render() {

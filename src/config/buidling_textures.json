@@ -1,0 +1,70 @@
+{
+    "daylight": [
+        {
+            "colorMapPath": "textures/facades/building01/daylight_Color.png",
+            "emmisionMapPath": null,
+            "normalMapPath": "textures/facades/building01/daylight_NormalGL.png",
+            "roughnessMapPath": "textures/facades/building01/daylight_Roughness.png",
+            "metalnessMapPath": "textures/facades/building01/daylight_Metalness.png",
+            "color": "0xffffff"
+        },
+        {
+            "colorMapPath": "textures/facades/building01/daylight_Color.png",
+            "emmisionMapPath": null,
+            "normalMapPath": "textures/facades/building01/daylight_NormalGL.png",
+            "roughnessMapPath": "textures/facades/building01/daylight_Roughness.png",
+            "metalnessMapPath": "textures/facades/building01/daylight_Metalness.png",
+            "color": "#4d4d4d"
+        },
+        {
+            "colorMapPath": "textures/facades/building02/daylight_Color.jpg",
+            "emmisionMapPath": null,
+            "normalMapPath": "textures/facades/building02/daylight_NormalGL.jpg",
+            "roughnessMapPath": "textures/facades/building02/daylight_Roughness.jpg",
+            "metalnessMapPath": "textures/facades/building02/daylight_Metalness.jpg",
+            "color": "#667a4e"
+        },
+        {
+            "colorMapPath": "textures/facades/building02/daylight_Color.jpg",
+            "emmisionMapPath": null,
+            "normalMapPath": "textures/facades/building02/daylight_NormalGL.jpg",
+            "roughnessMapPath": "textures/facades/building02/daylight_Roughness.jpg",
+            "metalnessMapPath": "textures/facades/building02/daylight_Metalness.jpg",
+            "color": "#f2f2ec"
+        }
+    ],
+    "nightlight": [
+        {
+            "colorMapPath": "textures/facades/building01/nightlight_Color.png",
+            "emmisionMapPath": "textures/facades/building01/nightlight_Emission.png",
+            "normalMapPath": "textures/facades/building01/nightlight_NormalGL.png",
+            "roughnessMapPath": "textures/facades/building01/nightlight_Roughness.png",
+            "metalnessMapPath": "textures/facades/building01/nightlight_Metalness.png",
+            "color": "0xffffff"
+        },
+        {
+            "colorMapPath": "textures/facades/building01/nightlight_Color.png",
+            "emmisionMapPath": "textures/facades/building01/nightlight_Emission.png",
+            "normalMapPath": "textures/facades/building01/nightlight_NormalGL.png",
+            "roughnessMapPath": "textures/facades/building01/nightlight_Roughness.png",
+            "metalnessMapPath": "textures/facades/building01/nightlight_Metalness.png",
+            "color": "#4d4d4d"
+        },
+        {
+            "colorMapPath": "textures/facades/building02/nightlight_Color.jpg",
+            "emmisionMapPath": "textures/facades/building02/nightlight_Emission.jpg",
+            "normalMapPath": "textures/facades/building02/nightlight_NormalGL.jpg",
+            "roughnessMapPath": "textures/facades/building02/nightlight_Roughness.jpg",
+            "metalnessMapPath": "textures/facades/building02/nightlight_Metalness.jpg",
+            "color": "#667a4e"
+        },
+        {
+            "colorMapPath": "textures/facades/building02/nightlight_Color.jpg",
+            "emmisionMapPath": "textures/facades/building02/nightlight_Emission.jpg",
+            "normalMapPath": "textures/facades/building02/nightlight_NormalGL.jpg",
+            "roughnessMapPath": "textures/facades/building02/nightlight_Roughness.jpg",
+            "metalnessMapPath": "textures/facades/building02/nightlight_Metalness.jpg",
+            "color": "#f2f2ec"
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 import * as config from "../config/road_structure.json";
-import { MeshBasicMaterial, Mesh } from "three";
+import { DoubleSide, Mesh, MeshStandardMaterial } from "three";
 import { RoadGeometry } from "../geometries/road_geometry";
 import { RoadRampGeometry } from "../geometries/road_ramp_geometry";
 import { ThreeManager } from "./three_manager";
@@ -34,7 +34,7 @@ export class RoadRampsManager {
     createMeshes(geometries: RoadRampGeometry[]) {
         const meshes = [];
         for (const geometry of geometries) {
-            const material = new MeshBasicMaterial({ color: 0xffff, wireframe: true });
+            const material = new MeshStandardMaterial({ color: 0xffff, side: DoubleSide });
             const mesh = new Mesh(geometry.geometry, material);
             meshes.push(mesh);
         }

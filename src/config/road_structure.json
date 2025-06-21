@@ -1,7 +1,7 @@
 {
     "road": {
-        "segments": 400,
-        "width": 2,
+        "segments": 1000,
+        "width": 4,
         "height": 0.1,
         "controlPoints": [
             [-40, 0, 14],
@@ -25,43 +25,45 @@
     },
     "tunnels": [
         {
-            "width": 2,
-            "height": 3,
+            "width": 4,
+            "height": 8,
+            "radius": 6,
             "from": 0.3,
             "to": 0.4
         },
         {
-            "width": 2,
-            "height": 3,
+            "width": 4,
+            "height": 8,
+            "radius": 6,
             "from": 0.8,
             "to": 0.9
         }
     ],
     "ramps": [
         {
-            "width": 4,
-            "height": 1,
+            "width": 8,
+            "height": 2,
             "from": 0.14,
             "to": 0.15,
             "reverse": false
         },
         {
-            "width": 4,
-            "height": 1,
+            "width": 8,
+            "height": 2,
             "from": 0.165,
             "to": 0.175,
             "reverse": true
         },
         {
-            "width": 4,
-            "height": 1,
+            "width": 8,
+            "height": 2,
             "from": 0.56,
             "to": 0.57,
             "reverse": false
         },
         {
-            "width": 4,
-            "height": 1,
+            "width": 8,
+            "height": 2,
             "from": 0.585,
             "to": 0.595,
             "reverse": false
