@@ -9,6 +9,8 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 export class RoadStreetlightsManager {
     private scene;
     private meshes;
+    private daylightMeshes;
+    private nightlightMeshes;
     private pointLights!: PointLight[];
 
     constructor(roadGeometry: RoadGeometry) {
@@ -16,7 +18,9 @@ export class RoadStreetlightsManager {
         this.scene = threeManager.scene;
         const geometries = this.createGeometries(roadGeometry);
         this.setPointLights(geometries);
-        this.meshes = this.createMeshes(geometries);
+        this.daylightMeshes = this.createDaylightMeshes(geometries);
+        this.nightlightMeshes = this.createNightlightMeshes(geometries);
+        this.meshes = this.daylightMeshes;
     }
 
     private createGeometries(roadGeometry: RoadGeometry) {
@@ -66,7 +70,27 @@ export class RoadStreetlightsManager {
         return geometries;
     }
 
-    private createMeshes(geometries: RoadStreetlightGeometry[]) {
+    private createDaylightMeshes(geometries: RoadStreetlightGeometry[]) {
+        const postMaterial = new MeshStandardMaterial({ color: 0x222222 });
+        const lampMaterial = new MeshStandardMaterial({
+            color: 0xffffff,
+        });
+
+        const meshes = [];
+        const postGeometries = [];
+        const postLampGeometries = [];
+        for (const { geometry } of geometries) {
+            postGeometries.push(geometry.postGeometry);
+            postLampGeometries.push(geometry.postLampGeometry);
+        }
+
+        const postMesh = new Mesh(mergeGeometries(postGeometries), postMaterial);
+        const lampMesh = new Mesh(mergeGeometries(postLampGeometries), lampMaterial);
+        meshes.push(postMesh, lampMesh);
+        return meshes;
+    }
+
+    private createNightlightMeshes(geometries: RoadStreetlightGeometry[]) {
         const postMaterial = new MeshStandardMaterial({ color: 0x222222 });
         const lampMaterial = new MeshStandardMaterial({
             color: 0xffff00,
@@ -105,11 +129,17 @@ export class RoadStreetlightsManager {
     }
 
     setDaylightTheme() {
+        this.scene.remove(...this.meshes);
         this.scene.remove(...this.pointLights);
+        this.meshes = this.daylightMeshes;
+        this.render();
     }
 
     setNightlightTheme() {
+        this.scene.remove(...this.meshes);
         this.scene.add(...this.pointLights);
+        this.meshes = this.nightlightMeshes;
+        this.render();
     }
 
     render() {
