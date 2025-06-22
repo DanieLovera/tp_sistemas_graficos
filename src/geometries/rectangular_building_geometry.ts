@@ -1,7 +1,6 @@
 import { Float32BufferAttribute, ShapeGeometry, Vector3 } from "three";
 import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 import { zero, one } from "../utils/functions";
-// import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { ParametricShape } from "../utils/parametric_shape";
 
 interface RectangularBuildingGeometryParams {

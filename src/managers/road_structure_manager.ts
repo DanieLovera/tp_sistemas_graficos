@@ -1,6 +1,6 @@
 import * as config from "../config/road_structure.json";
 import BigNumber from "bignumber.js";
-import { Mesh, Vector3, RepeatWrapping, TextureLoader, MeshStandardMaterial } from "three";
+import { Mesh, Vector3, RepeatWrapping, TextureLoader, MeshStandardMaterial, Vector2 } from "three";
 import { RoadGeometry } from "../geometries/road_geometry";
 import { RoadTunnelsManager } from "./road_tunnels_manager";
 import { RoadRampsManager } from "./road_ramps_manager";
@@ -86,23 +86,27 @@ export class RoadStructureManager {
     }
 
     render() {
-        const extrudeMaterial = new MeshStandardMaterial({ color: 0x222222 });
+        const loader = new TextureLoader();
+        const colorMap = loader.load("textures/Road007_4K-JPG_Color.jpg");
+        const normalMap = loader.load("textures/Road007_4K-JPG_NormalGL.jpg");
+        const roughnessMap = loader.load("textures/Road007_4K-JPG_Roughness.jpg");
 
-        // const loader = new TextureLoader();
-        // const texture = loader.load('textures/pavment.png');
+        const textures = [colorMap, normalMap, roughnessMap];
+        textures.forEach((texture) => {
+            texture.wrapS = RepeatWrapping;
+            texture.wrapT = RepeatWrapping;
+            texture.repeat.set(1, 50);
+        });
 
-        // texture.wrapS = RepeatWrapping;
-        // texture.wrapT = RepeatWrapping;
-        // texture.repeat.set(2, 2);  // Repite 20 veces la textura para no estirarla
-
-        // const groundMaterial = new MeshBasicMaterial({ map: texture });
-
-        const extrudeMesh = new Mesh(this.geometry.geometry, extrudeMaterial);
-
-        // this.scene.add(extrudeMesh);
-
-        this.scene.add(extrudeMesh);
-
+        const roadMaterial = new MeshStandardMaterial({
+            map: colorMap,
+            normalMap,
+            roughnessMap,
+            normalScale: new Vector2(1, 1),
+            roughness: 1
+        });
+        const roadMesh = new Mesh(this.geometry.geometry, roadMaterial);
+        this.scene.add(roadMesh);
         this.tunnelsManager.render();
         this.rampsManager.render();
         this.archsManager.render();
