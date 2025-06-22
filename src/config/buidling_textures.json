@@ -31,6 +31,13 @@
             "roughnessMapPath": "textures/facades/building02/daylight_Roughness.jpg",
             "metalnessMapPath": "textures/facades/building02/daylight_Metalness.jpg",
             "color": "#f2f2ec"
+        },
+        {
+            "colorMapPath": "textures/facades/building03/daylight_Color.png",
+            "emmisionMapPath": null,
+            "normalMapPath": null,
+            "roughnessMapPath": null,
+            "metalnessMapPath": null
         }
     ],
     "nightlight": [
@@ -65,6 +72,13 @@
             "roughnessMapPath": "textures/facades/building02/nightlight_Roughness.jpg",
             "metalnessMapPath": "textures/facades/building02/nightlight_Metalness.jpg",
             "color": "#f2f2ec"
+        },
+        {
+            "colorMapPath": "textures/facades/building03/nightlight_Color.png",
+            "emmisionMapPath": null,
+            "normalMapPath": null,
+            "roughnessMapPath": null,
+            "metalnessMapPath": null
         }
     ]
 }

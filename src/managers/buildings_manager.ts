@@ -282,8 +282,8 @@ export class BuildingsManager {
                 roughnessMap: textureSet.roughnessMap,
                 metalnessMap: textureSet.metalnessMap,
                 color: textureSet.color,
-                emissive: 0xffffff,
-                emissiveIntensity: 0.7,
+                emissive: textureSet.emissionMap ? 0xffffff : undefined,
+                emissiveIntensity: textureSet.emissionMap ? 0.7 : undefined,
             });
             bodyMaterials.push(bodyNaterial);
         }
