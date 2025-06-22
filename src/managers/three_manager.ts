@@ -1,14 +1,18 @@
 import { Scene, WebGLRenderer } from "three";
+import { PhysicsSimulator } from "../physics/PhysicsSimulator";
 
 export class ThreeManager {
     private static instance: ThreeManager;
     public renderer;
     public scene;
+    public canvasContainer!: HTMLDivElement;
+    // public physicsSimulator!: PhysicsSimulator;
 
     private constructor() {
         this.renderer = new WebGLRenderer();
         this.scene = new Scene();
         this.insertCanvas(this.renderer);
+        // this.initPhysics();
     }
 
     static getInstance(): ThreeManager {
@@ -18,6 +22,12 @@ export class ThreeManager {
         return ThreeManager.instance;
     }
 
+    // async initPhysics() {
+    //     const physicsSimulator = new PhysicsSimulator();
+    //     await physicsSimulator.initSimulation();
+    //     this.physicsSimulator = physicsSimulator;
+    // }    
+
     private insertCanvas(renderer: WebGLRenderer) {
         const canvas = renderer.domElement;
         const canvasContainer = document.createElement("div");
@@ -25,5 +35,6 @@ export class ThreeManager {
         canvasContainer.style.height = "100%";
         canvasContainer.appendChild(canvas);
         document.body.prepend(canvasContainer);
+        this.canvasContainer = canvasContainer;
     }
 }
