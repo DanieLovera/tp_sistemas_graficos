@@ -1,12 +1,9 @@
 import {
-    AxesHelper,
     BoxGeometry,
     CylinderGeometry,
     Mesh,
     MeshPhongMaterial,
-    Object3DEventMap,
     PerspectiveCamera,
-    SpotLight,
     Vector3,
     WebGLRenderer,
 } from "three";
@@ -20,6 +17,7 @@ import GUI from "lil-gui";
 
 import Stats from "three/addons/libs/stats.module.js";
 import { PhysicsSimulator } from "../physics/PhysicsSimulator";
+import { CarManager } from "./car_manager";
 
 class SceneManager {
     private static GRID_SIZE = 300;
@@ -31,19 +29,18 @@ class SceneManager {
     private skyManager;
     private buildingsManager;
     private roadStructureManager;
+    private carManager;
 
-    private chassis!: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private wheels!: any[];
     private physicsSimulator!: PhysicsSimulator;
     private stats;
     private controls!: OrbitControls;
 
-    constructor() {
+    constructor(physicsSimulator: PhysicsSimulator) {
         const threeManager = ThreeManager.getInstance();
         this.camera = this.createCamera(threeManager.renderer);
         this.renderer = threeManager.renderer;
         this.scene = threeManager.scene;
+        this.physicsSimulator = physicsSimulator;
         this.createMenu();
 
         this.skyManager = new SkyManager();
@@ -60,8 +57,10 @@ class SceneManager {
         canvasContainer.appendChild(stats.dom);
         this.stats = stats;
 
-        this.createPhysicObjets();
-        this.renderer.setAnimationLoop(this.animate);
+        this.carManager = new CarManager(this.physicsSimulator);
+        this.carManager.render();
+
+        // this.createPhysicObjets();
     }
 
     render = () => {
@@ -79,8 +78,7 @@ class SceneManager {
     };
 
     private animate = () => {
-        this.physicsSimulator.update();
-        this.updateVehicleTransforms();
+        this.carManager.animate();
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
         this.stats.update();
@@ -105,94 +103,27 @@ class SceneManager {
         return camera;
     }
 
-    async createPhysicObjets() {
-        this.physicsSimulator = new PhysicsSimulator();
-        await this.physicsSimulator.initSimulation();
+    // createPhysicObjets() {
+    //     // cylinder obstacle
+    //     const geometry = new CylinderGeometry(2, 2, 10, 16);
+    //     geometry.translate(0, 5, 0);
+    //     const material = new MeshPhongMaterial({ color: "#666699" });
+    //     const column = new Mesh(geometry, material);
+    //     column.position.set(-10, 0.5, 0);
 
-        this.createCarModel();
+    //     this.scene.add(column);
+    //     this.physicsSimulator.addRigidBody(column, 0, 0.01);
 
-        // cylinder obstacle
-        const geometry = new CylinderGeometry(2, 2, 10, 16);
-        geometry.translate(0, 5, 0);
-        const material = new MeshPhongMaterial({ color: "#666699" });
-        const column = new Mesh(geometry, material);
-        column.position.set(-10, 0.5, 0);
+    //     // ramp obstacle (should be a BoxGeometry)
+    //     const rampGeometry = new BoxGeometry(10, 1, 20);
+    //     const rampMaterial = new MeshPhongMaterial({ color: 0x999999 });
+    //     const ramp = new Mesh(rampGeometry, rampMaterial);
+    //     ramp.position.set(0, 1, -30);
+    //     ramp.rotation.x = Math.PI / 12;
+    //     this.scene.add(ramp);
 
-        this.scene.add(column);
-        this.physicsSimulator.addRigidBody(column, 0, 0.01);
-
-        // ramp obstacle (should be a BoxGeometry)
-        const rampGeometry = new BoxGeometry(10, 1, 20);
-        const rampMaterial = new MeshPhongMaterial({ color: 0x999999 });
-        const ramp = new Mesh(rampGeometry, rampMaterial);
-        ramp.position.set(0, 1, -30);
-        ramp.rotation.x = Math.PI / 12;
-        this.scene.add(ramp);
-
-        this.physicsSimulator.addRigidBody(ramp);
-    }
-
-    createCarModel() {
-        // chassis
-        const geometry = new BoxGeometry(2, 1, 4);
-        const material = new MeshPhongMaterial({ color: 0xff0000 });
-        const chassis = new Mesh(geometry, material);
-        this.scene.add(chassis);
-
-        // axes helper
-        const axesHelper = new AxesHelper(5);
-        chassis.add(axesHelper);
-
-        // add spolight on the front of the car
-        const light = new SpotLight(0xffdd99, 100);
-        light.decay = 1;
-        light.penumbra = 0.5;
-
-        light.position.set(0, 0, -2);
-        light.target.position.set(0, 0, -10);
-        chassis.add(light.target);
-
-        // add spotlight helper
-        //const lightHelper = new SpotLightHelper(light);
-        //light.add(lightHelper);
-
-        chassis.add(light);
-
-        // wheels
-        const wheelGeometry = new CylinderGeometry(0.6, 0.6, 0.4, 16);
-        wheelGeometry.rotateZ(Math.PI * 0.5);
-        const wheelMaterial = new MeshPhongMaterial({ color: 0x000000, wireframe: true });
-
-        const wheels = [];
-        for (let i = 0; i < 4; i++) {
-            const wheel = new Mesh(wheelGeometry, wheelMaterial);
-            chassis.add(wheel);
-            wheel.position.set(10 * i, 2, 20 * i);
-            wheels.push(wheel);
-        }
-
-        this.wheels = wheels;
-        this.chassis = chassis;
-    }
-
-    updateVehicleTransforms() {
-        const vt = this.physicsSimulator.getVehicleTransform();
-        if (this.chassis && vt) {
-            const { position, quaternion } = vt;
-            this.chassis.position.set(position.x, position.y, position.z);
-            this.chassis.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this.wheels.forEach((wheel: any, index: any) => {
-                const wheelTransform = this.physicsSimulator.getWheelTransform(index);
-                if (wheelTransform) {
-                    const { position, quaternion } = wheelTransform;
-                    wheel.position.set(position.x, position.y, position.z);
-                    wheel.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-                }
-            });
-        }
-    }
+    //     this.physicsSimulator.addRigidBody(ramp);
+    // }
 
     private createMenu() {
         const gui = new GUI();
