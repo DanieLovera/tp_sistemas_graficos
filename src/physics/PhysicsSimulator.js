@@ -49,6 +49,35 @@ export class PhysicsSimulator {
         brakeForce: 0,
     };
 
+    // Agrego handlers binded para poder remover los listeners
+    _keydownHandler = (event) => {
+        if (event.key === "w" || event.key === "ArrowUp") this.vehicleState.forward = 1;
+        if (event.key === "s" || event.key === "ArrowDown") this.vehicleState.forward = -1;
+        if (event.key === "a" || event.key === "ArrowLeft") this.vehicleState.right = 1;
+        if (event.key === "d" || event.key === "ArrowRight") this.vehicleState.right = -1;
+        if (event.key === "r") this.vehicleState.reset = true;
+        if (event.key === " ") this.vehicleState.brake = 1;
+    };
+
+    _keyupHandler = (event) => {
+        if (
+            event.key === "w" ||
+            event.key === "s" ||
+            event.key === "ArrowUp" ||
+            event.key === "ArrowDown"
+        )
+            this.vehicleState.forward = 0;
+        if (
+            event.key === "a" ||
+            event.key === "d" ||
+            event.key === "ArrowLeft" ||
+            event.key === "ArrowRight"
+        )
+            this.vehicleState.right = 0;
+        if (event.key === "r") this.vehicleState.reset = false;
+        if (event.key === " ") this.vehicleState.brake = 0;
+    };
+
     constructor(vehicleParams = {}, groundParams = {}) {
         this.params.vehicle = Object.assign(defaultVehicleParams, vehicleParams);
         this.params.ground = Object.assign(defaultGroundParams, groundParams);
@@ -196,24 +225,22 @@ export class PhysicsSimulator {
         this.vehicleController.setWheelBrake(3, wheelBrake);
     }
 
-    setupEventListeners() {
-        window.addEventListener("keydown", (event) => {
-            if (event.key === "w" || event.key === "ArrowUp") this.vehicleState.forward = 1;
-            if (event.key === "s" || event.key === "ArrowDown") this.vehicleState.forward = -1;
-            if (event.key === "a" || event.key === "ArrowLeft") this.vehicleState.right = 1;
-            if (event.key === "d" || event.key === "ArrowRight") this.vehicleState.right = -1;
-            if (event.key === "r") this.vehicleState.reset = true;
-            if (event.key === " ") this.vehicleState.brake = 1;
-        });
+    enableVehicleControls() {
+        this.setupEventListeners();
+    }
 
-        window.addEventListener("keyup", (event) => {
-            if (event.key === "w" || event.key === "s" || event.key === "ArrowUp" || event.key === "ArrowDown")
-                this.vehicleState.forward = 0;
-            if (event.key === "a" || event.key === "d" || event.key === "ArrowLeft" || event.key === "ArrowRight")
-                this.vehicleState.right = 0;
-            if (event.key === "r") this.vehicleState.reset = false;
-            if (event.key === " ") this.vehicleState.brake = 0;
-        });
+    disableVehicleControls() {
+        this.removeEventListeners();
+    }    
+
+    setupEventListeners() {
+        window.addEventListener("keydown", this._keydownHandler);
+        window.addEventListener("keyup", this._keyupHandler);
+    }
+
+    removeEventListeners() {
+        window.removeEventListener("keydown", this._keydownHandler);
+        window.removeEventListener("keyup", this._keyupHandler);
     }
 
     getVehicleTransform() {
