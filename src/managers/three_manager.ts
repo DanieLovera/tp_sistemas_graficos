@@ -1,10 +1,11 @@
 import { Scene, WebGLRenderer } from "three";
+import Stats from "three/addons/libs/stats.module.js";
 
 export class ThreeManager {
     private static instance: ThreeManager;
     public renderer;
     public scene;
-    public canvasContainer!: HTMLDivElement;
+    public stats!: Stats;
 
     private constructor() {
         this.renderer = new WebGLRenderer();
@@ -26,6 +27,10 @@ export class ThreeManager {
         canvasContainer.style.height = "100%";
         canvasContainer.appendChild(canvas);
         document.body.prepend(canvasContainer);
-        this.canvasContainer = canvasContainer;
+
+        const stats = new Stats();
+        canvasContainer.appendChild(stats.dom);
+
+        this.stats = stats;
     }
 }
