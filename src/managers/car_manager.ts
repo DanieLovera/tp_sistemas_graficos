@@ -22,11 +22,13 @@ export class CarManager {
     private physicsSimulator;
     private scene;
     private camera!: PerspectiveCamera;
+    private cameraOffset!: Vector3;
 
     constructor(physicsSimulator: PhysicsSimulator) {
         const threeManager = ThreeManager.getInstance();
         this.scene = threeManager.scene;
         this.physicsSimulator = physicsSimulator;
+        this.setOutsideCamera();
         this.createCamera();
         this.createCarModel();
     }
@@ -99,8 +101,6 @@ export class CarManager {
         const aspect = window.innerWidth / window.innerHeight;
 
         const camera = new PerspectiveCamera(fov, aspect, near, far);
-        camera.position.set(0, 6, 6);
-        camera.lookAt(0, 0, 0);
         this.camera = camera;
     }
 
@@ -110,10 +110,11 @@ export class CarManager {
             const { position, quaternion } = vt;
             const vPosition = new Vector3(position.x, position.y, position.z);
             const vQuaternion = new Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-            const offset = new Vector3(0, 5, 10);
-            const cameraOffset = offset.clone().applyQuaternion(vQuaternion).add(vPosition);
+            const cameraOffset = this.cameraOffset.clone().applyQuaternion(vQuaternion).add(vPosition);
             this.camera.position.copy(cameraOffset);
-            this.camera.lookAt(vPosition);
+            const forward = new Vector3(0, 0, -1).applyQuaternion(vQuaternion).normalize();
+            const lookAtPoint = vPosition.clone().add(forward.multiplyScalar(10));
+            this.camera.lookAt(lookAtPoint);
         }
     }
 
@@ -125,6 +126,16 @@ export class CarManager {
 
     render() {
         this.scene.add(this.chassis);
+    }
+
+    setInsideCamera() {
+        const offset = new Vector3(0, 1.5, 0.3);
+        this.cameraOffset = offset;
+    }
+
+    setOutsideCamera() {
+        const offset = new Vector3(0, 5, 10);
+        this.cameraOffset = offset;
     }
 
     getCamera() {

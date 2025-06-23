@@ -65,7 +65,7 @@ class SceneManager {
 
     private animate = () => {
         this.carManager.animate();
-        // this.controls.update();
+        this.controls.update();
         this.renderer.render(this.scene, this.camera);
         this.stats.update();
     };
@@ -119,9 +119,12 @@ class SceneManager {
         const camaraOptions = ["Interior vehiculo", "Seguimiento vehiculo", "Orbital", "Peaton"];
         gui.add(camaraMenu, camaraTitle, camaraOptions).onChange((value: string) => {
             if (value === "Interior vehiculo") {
-                console.log("Interior vehiculo");
+                this.controls.enabled = false;
+                this.carManager.setInsideCamera();
+                this.camera = this.carManager.getCamera();
             } else if (value === "Seguimiento vehiculo") {
                 this.controls.enabled = false;
+                this.carManager.setOutsideCamera();
                 this.camera = this.carManager.getCamera();
             } else if (value === "Orbital") {
                 this.controls.enabled = true;
