@@ -7,7 +7,7 @@ import { BuildingsManager } from "./buildings_manager";
 import { SkyManager } from "./sky_manager";
 import { CarManager } from "./car_manager";
 import { PhysicsSimulator } from "../physics/PhysicsSimulator";
-import GUI from "lil-gui";
+import GUI, { Controller } from "lil-gui";
 
 class SceneManager {
     private static GRID_SIZE = 300;
@@ -32,6 +32,10 @@ class SceneManager {
     private physicsSimulator!: PhysicsSimulator;
     private stats;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private camaraMenu: any;
+    private camaraController!: Controller;
+
     constructor(physicsSimulator: PhysicsSimulator) {
         const threeManager = ThreeManager.getInstance();
         this.orbitCamera = this.createCamera();
@@ -43,7 +47,6 @@ class SceneManager {
         this.physicsSimulator = physicsSimulator;
 
         this.createFirstPersonCamera();
-
         this.createMenu();
 
         const groundManager = new GroundManager(SceneManager.GRID_SIZE, SceneManager.LOT_SIZE);
@@ -51,11 +54,75 @@ class SceneManager {
         this.roadStructureManager = new RoadStructureManager(groundManager);
         this.buildingsManager = new BuildingsManager(groundManager);
         this.carManager = new CarManager(this.physicsSimulator);
+
         groundManager.render();
         this.skyManager.render();
         this.roadStructureManager.render();
         this.buildingsManager.render();
         this.carManager.render();
+
+        window.addEventListener("keydown", (e) => this.handleCameraSwitchKeys(e));
+    }
+
+    private handleCameraSwitchKeys(event: KeyboardEvent) {
+        if (event.repeat) return;
+        switch (event.key) {
+            case "1":
+                this.setCameraInteriorVehiculo();
+                break;
+            case "2":
+                this.setCameraSeguimientoVehiculo();
+                break;
+            case "3":
+                this.setCameraOrbital();
+                break;
+            case "4":
+                this.setCameraPeaton();
+                break;
+        }
+    }
+
+    private setCameraInteriorVehiculo() {
+        this.controls.enabled = false;
+        this.carManager.setInsideCamera();
+        this.camera = this.carManager.getCamera();
+        this.physicsSimulator.enableVehicleControls();
+        if (this.fpControls.isLocked) this.fpControls.unlock();
+
+        this.camaraMenu["Camara"] = "Interior vehiculo";
+        this.camaraController.updateDisplay();
+    }
+
+    private setCameraSeguimientoVehiculo() {
+        this.controls.enabled = false;
+        this.carManager.setOutsideCamera();
+        this.camera = this.carManager.getCamera();
+        this.physicsSimulator.enableVehicleControls();
+        if (this.fpControls.isLocked) this.fpControls.unlock();
+
+        this.camaraMenu["Camara"] = "Seguimiento vehiculo";
+        this.camaraController.updateDisplay();
+    }
+
+    private setCameraOrbital() {
+        this.controls.enabled = true;
+        this.controls.update();
+        this.camera = this.orbitCamera;
+        this.physicsSimulator.enableVehicleControls();
+        if (this.fpControls.isLocked) this.fpControls.unlock();
+
+        this.camaraMenu["Camara"] = "Orbital";
+        this.camaraController.updateDisplay();
+    }
+
+    private setCameraPeaton() {
+        this.controls.enabled = false;
+        this.camera = this.fpCamera;
+        this.physicsSimulator.disableVehicleControls();
+        this.fpControls.lock();
+
+        this.camaraMenu["Camara"] = "Peaton";
+        this.camaraController.updateDisplay();
     }
 
     render = () => {
@@ -197,29 +264,20 @@ class SceneManager {
 
         // CAMARAS
         const camaraTitle = "Camara";
-        const camaraMenu = {
+        this.camaraMenu = {
             [camaraTitle]: "Orbital",
         };
         const camaraOptions = ["Interior vehiculo", "Seguimiento vehiculo", "Orbital", "Peaton"];
-        gui.add(camaraMenu, camaraTitle, camaraOptions).onChange((value: string) => {
+        this.camaraController = gui.add(this.camaraMenu, camaraTitle, camaraOptions);
+        this.camaraController.onChange((value: string) => {
             if (value === "Interior vehiculo") {
-                this.controls.enabled = false;
-                this.carManager.setInsideCamera();
-                this.camera = this.carManager.getCamera();
-                this.physicsSimulator.enableVehicleControls();
+                this.setCameraInteriorVehiculo();
             } else if (value === "Seguimiento vehiculo") {
-                this.controls.enabled = false;
-                this.carManager.setOutsideCamera();
-                this.camera = this.carManager.getCamera();
-                this.physicsSimulator.enableVehicleControls();
+                this.setCameraSeguimientoVehiculo();
             } else if (value === "Orbital") {
-                this.controls.enabled = true;
-                this.controls.update();
-                this.camera = this.orbitCamera;
+                this.setCameraOrbital();
             } else if (value === "Peaton") {
-                this.controls.enabled = false;
-                this.camera = this.fpCamera;
-                this.physicsSimulator.disableVehicleControls();
+                this.setCameraPeaton();
             }
         });
     }
