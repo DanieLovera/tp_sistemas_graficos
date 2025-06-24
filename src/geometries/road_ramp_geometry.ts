@@ -1,5 +1,8 @@
-import { CatmullRom } from "../utils/catmull_rom";
+import { ShapeGeometry } from "three";
+import { CatmullRom, Orientation } from "../utils/catmull_rom";
 import { linear } from "../utils/functions";
+import { ParametricShape } from "../utils/parametric_shape";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 interface RoadRampGeometryParams {
     curve: CatmullRom;
@@ -19,7 +22,9 @@ export class RoadRampGeometry {
     constructor(optionalParams: RoadRampGeometryParams) {
         const params = this.setParams(optionalParams);
         this.reverse = params.reverse;
-        this.geometry = this.createParametricGeometry(params.width, params.height, params.curve);
+        const bodyGeometry = this.createParametricGeometry(params.width, params.height, params.curve);
+        const capGeometry = this.createCapGeometry(params.curve, params.width, params.height);
+        this.geometry = mergeGeometries([bodyGeometry, capGeometry]);
     }
 
     private setParams(params: RoadRampGeometryParams) {
@@ -54,4 +59,31 @@ export class RoadRampGeometry {
         const geometry = curve.parametricSwept(mappingFn, RoadRampGeometry.PROFILE_SIDES);
         return geometry;
     }
+
+    private createCapGeometry(curve: CatmullRom, width: number, height: number) {
+        const profileShape = new ParametricShape({
+            mappingFn: this.rectangularProfile(width, height),
+            segments: RoadRampGeometry.PROFILE_SIDES,
+        });
+
+        const geometry = new ShapeGeometry(profileShape.shape);
+        const m = curve.getSweptMatrix(this.reverse ? 0 : 1, 0, Orientation.Inside);
+        geometry.applyMatrix4(m);
+        return geometry;
+    }
+
+    private rectangularProfile = (width: number, height: number) => {
+        return (u: number): [number, number] => {
+            const side = u * RoadRampGeometry.PROFILE_SIDES;
+            if (side < 1) {
+                return [-width / 2, height * side];
+            } else if (side < 2) {
+                return [-width / 2 + width * (side - 1), height];
+            } else if (side < 3) {
+                return [width / 2, height - height * (-side + 2)];
+            } else {
+                return [width / 2 - width * (side - 3), 0];
+            }
+        };
+    };
 }
