@@ -51,7 +51,7 @@ class SceneManager {
 
         const groundManager = new GroundManager(SceneManager.GRID_SIZE, SceneManager.LOT_SIZE);
         this.skyManager = new SkyManager();
-        this.roadStructureManager = new RoadStructureManager(groundManager);
+        this.roadStructureManager = new RoadStructureManager(groundManager, this.physicsSimulator);
         this.buildingsManager = new BuildingsManager(groundManager);
         this.carManager = new CarManager(this.physicsSimulator);
 

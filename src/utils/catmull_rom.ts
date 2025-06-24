@@ -100,6 +100,10 @@ class CatmullRom {
     getPointAt(u: number) {
         return this.curve.getPointAt(u);
     }
+
+    getLength() {
+        return this.curve.getLength();
+    }
 }
 
 export { CatmullRom, Orientation };

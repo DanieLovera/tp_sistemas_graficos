@@ -9,6 +9,7 @@ import { RoadStreetlightsManager } from "./road_streetlights_manager";
 import { ThreeManager } from "./three_manager";
 import { GroundManager } from "./ground_manager";
 import { Orientation } from "../utils/catmull_rom";
+import { PhysicsSimulator } from "../physics/PhysicsSimulator";
 
 export class RoadStructureManager {
     private scene;
@@ -18,13 +19,13 @@ export class RoadStructureManager {
     private streetlightsManager;
     private geometry;
 
-    constructor(ground: GroundManager) {
+    constructor(ground: GroundManager, physicsSimulator: PhysicsSimulator) {
         const threeManager = ThreeManager.getInstance();
         this.scene = threeManager.scene;
 
         this.geometry = this.createRoadGeometry(ground);
         this.tunnelsManager = new RoadTunnelsManager(this.geometry);
-        this.rampsManager = new RoadRampsManager(this.geometry);
+        this.rampsManager = new RoadRampsManager(this.geometry, physicsSimulator);
         this.archsManager = new RoadArchsManager(this.geometry);
         this.streetlightsManager = new RoadStreetlightsManager(this.geometry);
     }
@@ -103,7 +104,7 @@ export class RoadStructureManager {
             normalMap,
             roughnessMap,
             normalScale: new Vector2(1, 1),
-            roughness: 1
+            roughness: 1,
         });
         const roadMesh = new Mesh(this.geometry.geometry, roadMaterial);
         this.scene.add(roadMesh);
