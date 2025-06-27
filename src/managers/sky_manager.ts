@@ -19,21 +19,21 @@ export class SkyManager {
     private setSkyTextures() {
         const loader = new CubeTextureLoader();
         this.daylightTexture = loader.load([
-            "textures/skies/daylight_px.png",
-            "textures/skies/daylight_nx.png",
-            "textures/skies/daylight_py.png",
-            "textures/skies/daylight_ny.png",
-            "textures/skies/daylight_pz.png",
-            "textures/skies/daylight_nz.png",
+            "src/textures/skies/daylight_px.png",
+            "src/textures/skies/daylight_nx.png",
+            "src/textures/skies/daylight_py.png",
+            "src/textures/skies/daylight_ny.png",
+            "src/textures/skies/daylight_pz.png",
+            "src/textures/skies/daylight_nz.png",
         ]);
 
         this.nightlightTexture = loader.load([
-            "textures/skies/nightlight_px.png",
-            "textures/skies/nightlight_nx.png",
-            "textures/skies/nightlight_py.png",
-            "textures/skies/nightlight_ny.png",
-            "textures/skies/nightlight_pz.png",
-            "textures/skies/nightlight_nz.png",
+            "src/textures/skies/nightlight_px.png",
+            "src/textures/skies/nightlight_nx.png",
+            "src/textures/skies/nightlight_py.png",
+            "src/textures/skies/nightlight_ny.png",
+            "src/textures/skies/nightlight_pz.png",
+            "src/textures/skies/nightlight_nz.png",
         ]);
         this.skyTexture = this.daylightTexture;
     }

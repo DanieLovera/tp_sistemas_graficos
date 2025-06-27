@@ -85,10 +85,10 @@ class GroundManager {
 
     createMesh() {
         const loader = new TextureLoader();
-        const colorMap = loader.load("textures/PavingStones126A_4K-JPG_Color.jpg");
-        const aoMap = loader.load("textures/PavingStones126A_4K-JPG_AmbientOcclusion.jpg");
-        const normalMap = loader.load("textures/PavingStones126A_4K-JPG_NormalGL.jpg");
-        const roughnessMap = loader.load("textures/PavingStones126A_4K-JPG_Roughness.jpg");
+        const colorMap = loader.load("src/textures/PavingStones126A_4K-JPG_Color.jpg");
+        const aoMap = loader.load("src/textures/PavingStones126A_4K-JPG_AmbientOcclusion.jpg");
+        const normalMap = loader.load("src/textures/PavingStones126A_4K-JPG_NormalGL.jpg");
+        const roughnessMap = loader.load("src/textures/PavingStones126A_4K-JPG_Roughness.jpg");
 
         const maps = [colorMap, normalMap, aoMap, roughnessMap];
         maps.forEach((tex) => {

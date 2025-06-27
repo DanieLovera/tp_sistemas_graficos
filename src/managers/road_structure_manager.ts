@@ -88,9 +88,9 @@ export class RoadStructureManager {
 
     render() {
         const loader = new TextureLoader();
-        const colorMap = loader.load("textures/Road007_4K-JPG_Color.jpg");
-        const normalMap = loader.load("textures/Road007_4K-JPG_NormalGL.jpg");
-        const roughnessMap = loader.load("textures/Road007_4K-JPG_Roughness.jpg");
+        const colorMap = loader.load("src/textures/Road007_4K-JPG_Color.jpg");
+        const normalMap = loader.load("src/textures/Road007_4K-JPG_NormalGL.jpg");
+        const roughnessMap = loader.load("src/textures/Road007_4K-JPG_Roughness.jpg");
 
         const textures = [colorMap, normalMap, roughnessMap];
         textures.forEach((texture) => {
