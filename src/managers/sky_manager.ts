@@ -19,21 +19,21 @@ export class SkyManager {
     private setSkyTextures() {
         const loader = new CubeTextureLoader();
         this.daylightTexture = loader.load([
-            "src/textures/skies/daylight_px.png",
-            "src/textures/skies/daylight_nx.png",
-            "src/textures/skies/daylight_py.png",
-            "src/textures/skies/daylight_ny.png",
-            "src/textures/skies/daylight_pz.png",
-            "src/textures/skies/daylight_nz.png",
+            "/tp_sistemas_graficos/skies/daylight_px.png",
+            "/tp_sistemas_graficos/skies/daylight_nx.png",
+            "/tp_sistemas_graficos/skies/daylight_py.png",
+            "/tp_sistemas_graficos/skies/daylight_ny.png",
+            "/tp_sistemas_graficos/skies/daylight_pz.png",
+            "/tp_sistemas_graficos/skies/daylight_nz.png",
         ]);
 
         this.nightlightTexture = loader.load([
-            "src/textures/skies/nightlight_px.png",
-            "src/textures/skies/nightlight_nx.png",
-            "src/textures/skies/nightlight_py.png",
-            "src/textures/skies/nightlight_ny.png",
-            "src/textures/skies/nightlight_pz.png",
-            "src/textures/skies/nightlight_nz.png",
+            "/tp_sistemas_graficos/skies/nightlight_px.png",
+            "/tp_sistemas_graficos/skies/nightlight_nx.png",
+            "/tp_sistemas_graficos/skies/nightlight_py.png",
+            "/tp_sistemas_graficos/skies/nightlight_ny.png",
+            "/tp_sistemas_graficos/skies/nightlight_pz.png",
+            "/tp_sistemas_graficos/skies/nightlight_nz.png",
         ]);
         this.skyTexture = this.daylightTexture;
     }
