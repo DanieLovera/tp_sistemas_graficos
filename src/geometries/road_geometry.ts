@@ -38,8 +38,16 @@ class RoadGeometry {
             const w = -(u - 0.5);
             return [0, 2 * w * width, 0];
         };
-        const geometry = this.curve.parametricSwept(mappingFn, 2);
+        const geometry = this.curve.parametricSwept(mappingFn, 1);
         geometry.translate(0, height, 0);
+
+        geometry.computeVertexNormals();
+        const normalAttr = geometry.getAttribute("normal");
+        for (let i = 0; i < normalAttr.count; i++) {
+            normalAttr.setXYZ(i, 0, 1, 0);
+        }
+
+        normalAttr.needsUpdate = true;
         return geometry;
     }
 
