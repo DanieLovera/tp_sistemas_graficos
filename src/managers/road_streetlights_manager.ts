@@ -114,16 +114,19 @@ export class RoadStreetlightsManager {
 
     private setPointLights(geometries: RoadStreetlightGeometry[]) {
         const pointLights: PointLight[] = [];
+        let number = 1;
         for (const { geometry } of geometries) {
             geometry.postLampGeometry.computeBoundingBox();
             const center = new Vector3();
             if (geometry.postLampGeometry.boundingBox) {
                 geometry.postLampGeometry.boundingBox.getCenter(center);
             }
-
-            // const light = new PointLight(0xffffaa, 5, 20, 2);
-            // light.position.copy(center);
-            // pointLights.push(light);
+            if (number % 6 === 0) {
+                const light = new PointLight(0xffffaa, 20, 20, 2);
+                light.position.copy(center);
+                pointLights.push(light);
+            }
+            number++;
         }
         this.pointLights = pointLights;
     }

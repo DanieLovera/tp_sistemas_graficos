@@ -1,23 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    AxesHelper,
-    BoxGeometry,
-    CylinderGeometry,
+    Group,
     Mesh,
     MeshPhongMaterial,
+    MeshPhysicalMaterial,
+    MeshStandardMaterial,
     Object3D,
     Object3DEventMap,
     PerspectiveCamera,
     Quaternion,
     SpotLight,
-    SpotLightHelper,
     Vector3,
 } from "three";
 import { PhysicsSimulator } from "../physics/PhysicsSimulator";
 import { ThreeManager } from "./three_manager";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export class CarManager {
     private chassis!: Object3D<Object3DEventMap>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private wheels!: any[];
     private physicsSimulator;
     private scene;
@@ -30,59 +30,118 @@ export class CarManager {
         this.physicsSimulator = physicsSimulator;
         this.setOutsideCamera();
         this.createCamera();
-        this.createCarModel();
+        const loader = new GLTFLoader();
+        loader.load("src/models/cybertruck.glb", this.onModelLoaded, this.onProgress, this.onLoadError);
     }
 
-    private createCarModel() {
-        // chassis
-        const geometry = new BoxGeometry(2, 1, 4);
-        const material = new MeshPhongMaterial({ color: 0xff0000 });
-        const chassis = new Mesh(geometry, material);
+    private createCarModel(gltf: any) {
+        const chassis = new Group();
+        const wheels: Mesh[] = [];
 
-        // axes helper
-        const axesHelper = new AxesHelper(5);
-        chassis.add(axesHelper);
+        const steelMaterial = new MeshStandardMaterial({
+            color: 0xcccccc,
+            metalness: 1,
+            roughness: 0.3,
+        });
 
-        // add spolight on the front of the car
-        const light = new SpotLight(0xffdd99, 100);
-        light.decay = 1;
-        light.penumbra = 0.5;
+        const bumperMaterial = new MeshStandardMaterial({
+            color: 0x111111,
+            metalness: 0.2,
+            roughness: 0.7,
+        });
 
-        light.position.set(0, 0, -2);
-        light.target.position.set(0, 0, -10);
-        chassis.add(light.target);
+        const frontLightsMaterial = new MeshPhongMaterial({
+            color: 0x222222,
+            emissive: 0xffffff,
+            emissiveIntensity: 3,
+            shininess: 100,
+        });
 
-        const lightHelper = new SpotLightHelper(light);
-        light.add(lightHelper);
+        const rearLightsMaterial = new MeshPhongMaterial({
+            color: 0x330000,
+            emissive: 0xff0000,
+            emissiveIntensity: 4,
+            shininess: 100,
+        });
 
-        chassis.add(light);
+        const windowsMaterial = new MeshPhysicalMaterial({
+            color: 0x222222,
+            metalness: 0.25,
+            roughness: 0.1,
+            transmission: 0.8,
+            transparent: true,
+            opacity: 0.8,
+            thickness: 0.5,
+            clearcoat: 1.0,
+        });
 
-        // wheels
-        const wheelGeometry = new CylinderGeometry(0.6, 0.6, 0.4, 16);
-        wheelGeometry.rotateZ(Math.PI * 0.5);
-        const wheelMaterial = new MeshPhongMaterial({ color: 0x000000, wireframe: true });
+        gltf.scene.traverse((child: any) => {
+            if (child.isMesh) {
+                console.log(child);
+                if (child.name === "person") {
+                    return;
+                }
 
-        const wheels = [];
+                if (child.name.startsWith("wheel")) {
+                    wheels.push(child);
+                    return;
+                }
+
+                if (child.name === "chassis") {
+                    child.material = steelMaterial;
+                } else if (child.name === "frontBumper" || child.name === "rearBumper") {
+                    child.material = bumperMaterial;
+                } else if (child.name === "frontLights") {
+                    child.material = frontLightsMaterial;
+                } else if (child.name === "rearLights") {
+                    child.material = rearLightsMaterial;
+                } else if (child.name === "windows") {
+                    child.material = windowsMaterial;
+                }
+                const part = child.clone();
+                chassis.add(part);
+            }
+        });
+
+        const wheelGeometry = [];
         for (let i = 0; i < 4; i++) {
-            const wheel = new Mesh(wheelGeometry, wheelMaterial);
-            chassis.add(wheel);
-            wheel.position.set(10 * i, 2, 20 * i);
-            wheels.push(wheel);
+            const wg = wheels[i].geometry.clone();
+            const sign = i % 2 ? -1 : 1;
+            wg.rotateZ(Math.PI * sign * 0.5);
+            wheelGeometry.push(wg);
         }
 
-        this.wheels = wheels;
+        const wheelMaterial = new MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.9,
+            metalness: 0.1,
+        });
+
+        const wheelsOK = [];
+        for (let i = 0; i < 4; i++) {
+            const wheel = new Mesh(wheelGeometry[i], wheelMaterial);
+            chassis.add(wheel);
+            wheelsOK.push(wheel);
+        }
+
+        const frontLight = new SpotLight(0xffffff, 10, 20, Math.PI / 6, 0.5, 1);
+        frontLight.position.set(0, 1, -2);
+        frontLight.target.position.set(0, 1, -10);
+        chassis.add(frontLight);
+        chassis.add(frontLight.target);
+
         this.chassis = chassis;
+        this.wheels = wheelsOK;
+        this.scene.add(chassis);
     }
 
     private updateVehicleTransforms() {
         const vt = this.physicsSimulator.getVehicleTransform();
         if (this.chassis && vt) {
-            // console.log(vt.position);
             const { position, quaternion } = vt;
             this.chassis.position.set(position.x, position.y, position.z);
             this.chassis.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.wheels.forEach((wheel: any, index: any) => {
                 const wheelTransform = this.physicsSimulator.getWheelTransform(index);
                 if (wheelTransform) {
@@ -125,7 +184,7 @@ export class CarManager {
     }
 
     render() {
-        this.scene.add(this.chassis);
+        // this.scene.add(this.chassis);
     }
 
     setInsideCamera() {
@@ -141,4 +200,28 @@ export class CarManager {
     getCamera() {
         return this.camera;
     }
+
+    onModelLoaded = (gltf: any) => {
+        this.createCarModel(gltf);
+        // const mat = new MeshPhongMaterial({ color: 0xcccccc, shininess: 128 });
+
+        // gltf.scene.traverse((child: any) => {
+        //     if (child.name === "person") {
+        //         child.visible = false;
+        //     } else {
+        //         child.material = mat;
+        //         console.log(child);
+        //     }
+        // });
+
+        // this.scene.add(gltf.scene);
+    };
+
+    onProgress = (event: any) => {
+        console.log((event.loaded / event.total) * 100 + "% loaded");
+    };
+
+    onLoadError = (event: any) => {
+        console.error("Error loading", event);
+    };
 }
