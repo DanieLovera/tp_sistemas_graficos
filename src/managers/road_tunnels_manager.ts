@@ -34,10 +34,10 @@ export class RoadTunnelsManager {
 
     createMeshes(geometries: RoadTunnelGeometry[]) {
         const loader = new TextureLoader();
-        const colorMap = loader.load("public/textures/Concrete008_4K-JPG_Color.jpg");
-        const aoMap = loader.load("public/textures/Concrete008_4K-JPG_AmbientOcclusion.jpg");
-        const normalMap = loader.load("public/textures/Concrete008_4K-JPG_NormalGL.jpg");
-        const roughnessMap = loader.load("public/textures/Concrete008_4K-JPG_Roughness.jpg");
+        const colorMap = loader.load("/tp_sistemas_graficos/textures/Concrete008_4K-JPG_Color.jpg");
+        const aoMap = loader.load("/tp_sistemas_graficos/textures/Concrete008_4K-JPG_AmbientOcclusion.jpg");
+        const normalMap = loader.load("/tp_sistemas_graficos/textures/Concrete008_4K-JPG_NormalGL.jpg");
+        const roughnessMap = loader.load("/tp_sistemas_graficos/textures/Concrete008_4K-JPG_Roughness.jpg");
 
         const maps = [colorMap, normalMap, aoMap, roughnessMap];
         maps.forEach((tex) => {
