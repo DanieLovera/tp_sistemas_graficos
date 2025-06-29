@@ -121,7 +121,7 @@ export class RoadStreetlightsManager {
             if (geometry.postLampGeometry.boundingBox) {
                 geometry.postLampGeometry.boundingBox.getCenter(center);
             }
-            if (number % 5 === 0) {
+            if (number % 6 === 0) {
                 const light = new PointLight(0xffffaa, 20, 20, 2);
                 light.position.copy(center);
                 pointLights.push(light);
