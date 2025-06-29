@@ -31,7 +31,7 @@ export class CarManager {
         this.setOutsideCamera();
         this.createCamera();
         const loader = new GLTFLoader();
-        loader.load("src/models/cybertruck.glb", this.onModelLoaded, this.onProgress, this.onLoadError);
+        loader.load("/tp_sistemas_graficos/models/cybertruck.glb", this.onModelLoaded, this.onProgress, this.onLoadError);
     }
 
     private createCarModel(gltf: any) {
